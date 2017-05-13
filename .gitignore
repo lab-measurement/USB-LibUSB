@@ -1,0 +1,11 @@
+*~
+*.c
+*.o
+/MYMETA*
+/META*
+Makefile
+Makefile.old
+/blib/
+const-*.inc
+/fallback/
+/pm_to_blib
