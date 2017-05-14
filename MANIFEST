@@ -1,5 +1,4 @@
 Changes
-LibUSB.xs
 Makefile.PL
 MANIFEST
 ppport.h
@@ -8,3 +7,4 @@ t/LibUSB.t
 fallback/const-c.inc
 fallback/const-xs.inc
 lib/LibUSB.pm
+lib/LibUSB.xs
