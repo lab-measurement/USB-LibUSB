@@ -1,7 +1,8 @@
-LibUSB               T_PTROBJ
-LibUSB::Device       T_PTROBJ
-HV *                 T_HVREF_REFCOUNT_FIXED
-AV *	             T_AVREF_REFCOUNT_FIXED
+LibUSB                       T_PTROBJ
+LibUSB::Device               T_PTROBJ
+LibUSB::Device::Handle       T_PTROBJ
+HV *                         T_HVREF_REFCOUNT_FIXED
+AV *	                     T_AVREF_REFCOUNT_FIXED
 ##########################
 INPUT
 

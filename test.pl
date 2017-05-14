@@ -7,21 +7,18 @@ use blib;
 use LibUSB;
 
 my $ctx = LibUSB->new();
+$ctx->set_debug(LIBUSB_LOG_LEVEL_WARNING);
+
 my @devices = $ctx->get_device_list();
 
-for my $dev (@devices) {
-    printf("Bus: %03d ", $dev->get_bus_number());
-    printf("Device: %03d:", $dev->get_device_address());
+for my $i (0..$#devices) {
+    printf("$i: ");
+    printf("Bus: %03d ", $devices[$i]->get_bus_number());
+    printf("Device: %03d:", $devices[$i]->get_device_address());
     
     printf("\n");
 }
 
-my @ports = $devices[7]->get_port_numbers();
+my $dev = $devices[8];
 
-say "ports: @ports";
-
-my $parent = $devices[7]->get_parent();
-say "parent: $parent";
-
-$parent = $devices[1]->get_parent();
-say "parent: $parent";
+my $handle = $dev->open();
