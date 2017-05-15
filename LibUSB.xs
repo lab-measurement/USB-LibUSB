@@ -63,21 +63,56 @@ handle_error(ssize_t errcode, const char *function_name)
     CROAK("Error in ", function_name, ": ", error);
 }
 
-static HV *
-interface_descriptor_to_HV(struct libusb_interface_descriptor *interface)
+static SV *
+endpoint_descriptor_to_HV(const struct libusb_endpoint_descriptor *endpoint)
 {
-
+  HV *rv = newHV();
+  hv_stores(rv, "bLength", newSVuv(endpoint->bLength));
+  hv_stores(rv, "bDescriptorType", newSVuv(endpoint->bDescriptorType));
+  hv_stores(rv, "bEndpointAddress", newSVuv(endpoint->bEndpointAddress));
+  hv_stores(rv, "bmAttributes", newSVuv(endpoint->bmAttributes));
+  hv_stores(rv, "wMaxPacketSize", newSVuv(endpoint->wMaxPacketSize));
+  hv_stores(rv, "bInterval", newSVuv(endpoint->bInterval));
+  hv_stores(rv, "bRefresh", newSVuv(endpoint->bRefresh));
+  hv_stores(rv, "bSynchAddress", newSVuv(endpoint->bSynchAddress));
+  hv_stores(rv, "extra", newSVpvn((const char *)endpoint->extra, endpoint->extra_length));
+  return newRV_noinc((SV *) rv);
 }
 
-static AV *
-interface_array_to_AV(struct libusb_interface *interface)
+static SV *
+endpoint_array_to_AV(const struct libusb_endpoint_descriptor *endpoint, int num_endpoints)
 {
   AV *rv = newAV();
-  int i;
-  for (int i = 0; i < interface->num_altsetting; ++i) {
-  av_push(rv, interface->altsetting;
+  for (int i = 0; i < num_endpoints; ++i)
+      av_push(rv, endpoint_descriptor_to_HV(&endpoint[i]));
+  return newRV_noinc((SV *) rv);
+}
 
-  
+
+static SV *
+interface_descriptor_to_HV(const struct libusb_interface_descriptor *interface)
+{
+  HV *rv = newHV();
+  hv_stores(rv, "bLength", newSVuv(interface->bLength));
+  hv_stores(rv, "bDescriptorType", newSVuv(interface->bDescriptorType));
+  hv_stores(rv, "bInterfaceNumber", newSVuv(interface->bInterfaceNumber));
+  hv_stores(rv, "bAlternateSetting", newSVuv(interface->bAlternateSetting));
+  hv_stores(rv, "bNumEndpoints", newSVuv(interface->bNumEndpoints));
+  hv_stores(rv, "bInterfaceClass", newSVuv(interface->bInterfaceClass));
+  hv_stores(rv, "bInterfaceProtocol", newSVuv(interface->bInterfaceProtocol));
+  hv_stores(rv, "iInterface", newSVuv(interface->iInterface));
+  hv_stores(rv, "endpoint", endpoint_array_to_AV(interface->endpoint, interface->bNumEndpoints));
+  hv_stores(rv, "extra", newSVpvn((const char *) interface->extra, interface->extra_length));
+  return newRV_noinc((SV *) rv);
+}
+
+static SV *
+interface_array_to_AV(const struct libusb_interface *interface)
+{
+  AV *rv = newAV();
+  for (int i = 0; i < interface->num_altsetting; ++i)
+    av_push(rv, interface_descriptor_to_HV(&interface->altsetting[i]));
+  return newRV_noinc((SV *) rv);  
 }
 
 static HV *
@@ -93,7 +128,7 @@ config_descriptor_to_HV(struct libusb_config_descriptor *config)
     hv_stores(rv, "bmAttributes", newSVuv(config->bmAttributes));
     hv_stores(rv, "MaxPower", newSVuv(config->MaxPower));
     hv_stores(rv, "interface", interface_array_to_AV(config->interface));
-    hv_stores(rv, "extra", newSVpvn(config->extra, config->extra_length));
+    hv_stores(rv, "extra", newSVpvn((const char *) config->extra, config->extra_length));
     return rv;
 }
 
@@ -239,6 +274,7 @@ CODE:
 OUTPUT:
     RETVAL
 
+    
 HV *
 libusb_get_active_config_descriptor(LibUSB::Device dev)
 CODE:
@@ -250,13 +286,23 @@ CODE:
 OUTPUT:
     RETVAL
 
+    
+HV *
+libusb_get_config_descriptor(LibUSB::Device dev, unsigned config_index)
+CODE:
+    struct libusb_config_descriptor *config;
+    int rv = libusb_get_config_descriptor(dev, config_index, &config);
+    handle_error(rv, "libusb_get_config_descriptor");
+    RETVAL = config_descriptor_to_HV(config);
+    libusb_free_config_descriptor(config);
+OUTPUT:
+    RETVAL
 
+    
 void
 DESTROY(LibUSB::Device dev)
 CODE:
     libusb_unref_device(dev);
-
-
 
 
 
@@ -312,7 +358,18 @@ CODE:
     int rv = libusb_reset_device(dev);
     handle_error(rv, "libusb_reset_device");
 
-
+SV *
+libusb_get_descriptor(LibUSB::Device::Handle dev, unsigned desc_type, unsigned desc_index)
+CODE:
+    //FIXME
+    int len = 23;
+    unsigned char data[len];
+    int rv = libusb_get_descriptor(dev, desc_type, desc_index, data, len);
+    handle_error(rv, "libusb_get_descriptor");
+    printf("rv: %d\n", rv);
+    RETVAL = newSVpvn((const char *) data, rv);
+OUTPUT:
+    RETVAL
 
 void
 DESTROY(LibUSB::Device::Handle handle)
