@@ -454,8 +454,42 @@ CODE:
     Safefree(buffer);
 OUTPUT:
     RETVAL
-    
+
+
+############################
+#
+# Synchronous device I/O
+#
+############################
+
 void
 DESTROY(LibUSB::Device::Handle handle)
 CODE:
     libusb_close(handle);
+
+
+void
+libusb_control_transfer_write(LibUSB::Device::Handle handle, unsigned bmRequestType, unsigned bRequest, unsigned wValue, unsigned wIndex, SV *data, unsigned timeout)
+CODE:
+    char *bytes;
+    STRLEN len;
+    bytes = SvPV(data, len);
+    int rv = libusb_control_transfer(handle, bmRequestType, bRequest, wValue,
+                                     wIndex, (unsigned char *) bytes, len,
+                                     timeout);
+    handle_error(rv, "libusb_control_transfer (write)");
+
+
+SV *
+libusb_control_transfer_read(LibUSB::Device::Handle handle, unsigned bmRequestType, unsigned bRequest, unsigned wValue, unsigned wIndex, unsigned length, unsigned timeout)
+CODE:
+    unsigned char *data;
+    Newx(data, length, unsigned char);
+    int rv = libusb_control_transfer(handle, bmRequestType, bRequest, wValue,
+                                     wIndex, data, length, timeout);
+    handle_error(rv, "libusb_control_transfer (read)");
+    RETVAL = newSVpvn((const char *) data, rv);
+    Safefree(data);
+OUTPUT:
+    RETVAL
+                                     
