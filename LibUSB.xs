@@ -52,6 +52,8 @@ call_va_list(char *func, char *arg1, ...)
     LEAVE;
 }
 
+#define ALLOC_START_SIZE 100
+
 static void
 handle_error(ssize_t errcode, const char *function_name)
 {
@@ -359,18 +361,67 @@ CODE:
     handle_error(rv, "libusb_reset_device");
 
 SV *
-libusb_get_descriptor(LibUSB::Device::Handle dev, unsigned desc_type, unsigned desc_index)
+libusb_get_string_descriptor_ascii(LibUSB::Device::Handle dev, unsigned desc_index)
 CODE:
-    //FIXME
-    int len = 23;
-    unsigned char data[len];
-    int rv = libusb_get_descriptor(dev, desc_type, desc_index, data, len);
-    handle_error(rv, "libusb_get_descriptor");
-    printf("rv: %d\n", rv);
-    RETVAL = newSVpvn((const char *) data, rv);
+    int buffer_len = ALLOC_START_SIZE;
+    unsigned char *buffer = NULL;
+    int rv;
+    while (1) {
+        Renew(buffer, buffer_len, unsigned char);
+        rv = libusb_get_string_descriptor_ascii(dev, desc_index, buffer,
+                                                buffer_len);
+        handle_error(rv, "libusb_get_string_descriptor_ascii");
+        if (rv < buffer_len)
+            break;
+        buffer_len = (buffer_len * 3) / 2;
+    }
+    RETVAL = newSVpvn((const char *) buffer, rv);
+    Safefree(buffer);
 OUTPUT:
     RETVAL
 
+
+SV *
+libusb_get_descriptor(LibUSB::Device::Handle dev, unsigned desc_type, unsigned desc_index)
+CODE:
+    int buffer_len = ALLOC_START_SIZE;
+    unsigned char *buffer = NULL;
+    int rv;
+    while (1) {
+        Renew(buffer, buffer_len, unsigned char);
+        rv = libusb_get_descriptor(dev, desc_type, desc_index, buffer,
+                                   buffer_len);
+        handle_error(rv, "libusb_get_descriptor");
+        if (rv < buffer_len)
+            break;
+        buffer_len = (buffer_len * 3) / 2;
+    }
+    RETVAL = newSVpvn((const char *) buffer, rv);
+    Safefree(buffer);
+OUTPUT:
+    RETVAL
+
+
+SV *
+libusb_get_string_descriptor(LibUSB::Device::Handle dev, unsigned desc_index, unsigned langid)
+CODE:
+    int buffer_len = ALLOC_START_SIZE;
+    unsigned char *buffer = NULL;
+    int rv;
+    while (1) {
+        Renew(buffer, buffer_len, unsigned char);
+        rv = libusb_get_string_descriptor(dev, desc_index, langid, buffer,
+                                          buffer_len);
+        handle_error(rv, "libusb_get_string_descriptor");
+        if (rv < buffer_len)
+            break;
+        buffer_len = (buffer_len * 3) / 2;
+    }
+    RETVAL = newSVpvn((const char *) buffer, rv);
+    Safefree(buffer);
+OUTPUT:
+    RETVAL
+    
 void
 DESTROY(LibUSB::Device::Handle handle)
 CODE:
