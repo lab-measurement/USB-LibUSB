@@ -360,6 +360,39 @@ CODE:
     int rv = libusb_reset_device(dev);
     handle_error(rv, "libusb_reset_device");
 
+int
+libusb_kernel_driver_active(LibUSB::Device::Handle dev, int interface_number)
+CODE:
+    int rv = libusb_kernel_driver_active(dev, interface_number);
+    handle_error(rv, "libusb_kernel_driver_active");
+    RETVAL = rv;
+OUTPUT:
+    RETVAL
+
+
+void
+libusb_detach_kernel_driver(LibUSB::Device::Handle dev, int interface_number)
+CODE:
+    int rv = libusb_detach_kernel_driver(dev, interface_number);
+    handle_error(rv, "libusb_detach_kernel_driver");
+
+
+void
+libusb_attach_kernel_driver(LibUSB::Device::Handle dev, int interface_number)
+CODE:
+    int rv = libusb_attach_kernel_driver(dev, interface_number);
+    handle_error(rv, "libusb_attach_kernel_driver");
+
+void
+libusb_set_auto_detach_kernel_driver(LibUSB::Device::Handle dev, int enable)
+CODE:
+    int rv = libusb_set_auto_detach_kernel_driver(dev, enable);
+    handle_error(rv, "libusb_set_auto_detach_kernel_driver");
+
+
+   
+
+
 SV *
 libusb_get_string_descriptor_ascii(LibUSB::Device::Handle dev, unsigned desc_index)
 CODE:
