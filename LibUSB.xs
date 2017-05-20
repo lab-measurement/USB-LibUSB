@@ -527,3 +527,38 @@ CODE:
     Safefree(data);
 OUTPUT:
     RETVAL
+
+int
+libusb_interrupt_transfer_write(LibUSB::Device::Handle handle, unsigned endpoint, SV *data, unsigned timeout)
+CODE:
+    if ((endpoint & 0x80) != LIBUSB_ENDPOINT_OUT)
+        CROAK("not an host-to-device endpoint");
+    STRLEN len;
+    char *bytes = SvPV(data, len);
+    int transferred;
+    int rv = libusb_interrupt_transfer(handle, endpoint,
+                                       (unsigned char *) bytes,
+                                       len, &transferred, timeout);
+    /* maybe add variant of this function which still returns on
+       ERROR_TIMEOUT, as transferred is populated in that case. */
+    handle_error(rv, "libusb_interrupt_transfer (write)");
+    RETVAL = transferred;
+OUTPUT:
+    RETVAL
+
+
+SV *
+libusb_interrupt_transfer_read(LibUSB::Device::Handle handle, unsigned endpoint, int length, unsigned timeout)
+CODE:
+    if ((endpoint & 0x80) != LIBUSB_ENDPOINT_IN)
+        CROAK("not an device-to-host endpoint");
+    unsigned char *data;
+    Newx(data, length, unsigned char);
+    int transferred;
+    int rv = libusb_interrupt_transfer(handle, endpoint, data, length,
+                                       &transferred, timeout);
+    handle_error(rv, "libusb_interrupt_transfer (read)");
+    RETVAL = newSVpvn((const char *) data, transferred);
+    Safefree(data);
+OUTPUT:
+    RETVAL
