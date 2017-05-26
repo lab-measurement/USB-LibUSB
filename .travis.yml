@@ -1,8 +1,10 @@
+dist: trusty
 sudo: false
 
 addons:
   apt:
     packages:
+      - pkg-config
       - libusb-1.0-0-dev
 
 language: perl
@@ -19,6 +21,9 @@ perl:
   - 5.8
 
 install:
+  - pkg-config --list-all
+  - pkg-config --cflags libusb-1.0
+  - pkg-config --libs libusb-1.0
   - perl Makefile.PL
   - make
   - prove -bv t
