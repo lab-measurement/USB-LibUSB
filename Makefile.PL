@@ -154,7 +154,8 @@ if  (eval {require ExtUtils::Constant; 1}) {
               {name=>"LIBUSB_TRANSFER_STALL", macro=>"1"},
               {name=>"LIBUSB_TRANSFER_TIMED_OUT", macro=>"1"},
               {name=>"LIBUSB_TRANSFER_TYPE_BULK", macro=>"1"},
-              {name=>"LIBUSB_TRANSFER_TYPE_BULK_STREAM", macro=>"1"},
+               # added in 1.0.19
+               # {name=>"LIBUSB_TRANSFER_TYPE_BULK_STREAM", macro=>"1"},
               {name=>"LIBUSB_TRANSFER_TYPE_CONTROL", macro=>"1"},
               {name=>"LIBUSB_TRANSFER_TYPE_INTERRUPT", macro=>"1"},
               {name=>"LIBUSB_TRANSFER_TYPE_ISOCHRONOUS", macro=>"1"});
