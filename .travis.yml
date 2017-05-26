@@ -1,3 +1,5 @@
+# Can only compile. Running fails with libusb_init as the travis kernel does
+# not have usb support apparently.
 dist: trusty
 sudo: false
 
