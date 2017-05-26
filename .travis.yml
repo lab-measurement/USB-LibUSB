@@ -1,0 +1,27 @@
+sudo: false
+
+addons:
+  apt:
+    packages:
+      - libusb-1.0-0-dev
+
+language: perl
+
+perl:
+  - 5.24
+  - 5.22
+  - 5.20
+  - 5.18
+  - 5.16
+  - 5.14
+  - 5.12
+  - 5.10
+  - 5.8
+
+install:
+  - perl Makefile.PL
+  - make
+  - prove -bv t
+
+notifications:
+  email: false

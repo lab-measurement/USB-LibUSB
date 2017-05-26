@@ -138,6 +138,9 @@ MODULE = LibUSB		PACKAGE = LibUSB	 PREFIX = libusb_
 
 INCLUDE: const-xs.inc
 
+void
+libusb_set_debug(LibUSB ctx, int level)
+
 LibUSB
 libusb_init(char *class)
 CODE:
@@ -150,16 +153,9 @@ OUTPUT:
     RETVAL
 
 
+
 void
-libusb_set_debug(LibUSB ctx, int level)
-CODE:
-    libusb_set_debug(ctx, level);
-    
-
-
-
-
-
+libusb_exit(LibUSB ctx)
 
 void
 libusb_get_device_list(LibUSB ctx)
@@ -190,8 +186,7 @@ OUTPUT:
 void
 DESTROY(LibUSB ctx)
 CODE:
-    libusb_exit(ctx);
-
+    do_not_warn_unused(ctx);
 
 MODULE = LibUSB      PACKAGE = LibUSB::Device       PREFIX = libusb_
 
@@ -250,6 +245,8 @@ CODE:
 OUTPUT:
     RETVAL
 
+void
+libusb_close(LibUSB::Device::Handle handle)
 
 HV *
 libusb_get_device_descriptor(LibUSB::Device dev)
@@ -304,7 +301,7 @@ OUTPUT:
 void
 DESTROY(LibUSB::Device dev)
 CODE:
-    libusb_unref_device(dev);
+    do_not_warn_unused(dev);
 
 
 
@@ -465,7 +462,7 @@ OUTPUT:
 void
 DESTROY(LibUSB::Device::Handle handle)
 CODE:
-    libusb_close(handle);
+    do_not_warn_unused(handle);
 
 
 void
