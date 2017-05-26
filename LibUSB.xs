@@ -62,7 +62,13 @@ handle_error(ssize_t errcode, const char *function_name)
     if (errcode >= 0)
         return;
     const char *error = libusb_strerror(errcode);
-    CROAK("Error in ", function_name, ": ", error);
+    if (errno) {
+        char *errno_error = strerror(errno);
+        CROAK("Error in ", function_name, ": ", error, ". errno: ",
+        errno_error);
+    }
+    else
+        CROAK("Error in ", function_name, ": ", error);
 }
 
 static SV *
