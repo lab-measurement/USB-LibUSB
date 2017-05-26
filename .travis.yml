@@ -25,6 +25,7 @@ perl:
 install:
   - perl Makefile.PL
   - make
+script:
   - prove -bv t
 
 notifications:
