@@ -20,12 +20,12 @@ do_not_warn_unused(void *x __attribute__((__unused__)))
 
 
 #define CROAK(arg1, ...) \
-    call_va_list("Carp::croak", arg1, ## __VA_ARGS__, NULL)
+    call_va_list(aTHX_ "Carp::croak", arg1, ## __VA_ARGS__, NULL)
 #define CARP(arg1, ...) \
-    call_va_list("Carp::carp", arg1, ## __VA_ARGS__, NULL)
+    call_va_list(aTHX_ "Carp::carp", arg1, ## __VA_ARGS__, NULL)
 
 static void
-call_va_list(char *func, char *arg1, ...)
+call_va_list(pTHX_ char *func, char *arg1, ...)
 {
     va_list ap;
     va_start(ap, arg1);
@@ -55,7 +55,7 @@ call_va_list(char *func, char *arg1, ...)
 #define ALLOC_START_SIZE 100
 
 static void
-handle_error(ssize_t errcode, const char *function_name)
+handle_error(pTHX_ ssize_t errcode, const char *function_name)
 {
     /* Some functions like libusb_get_device_list return positive numbers
      on success. So do not check for == 0.  */
@@ -72,7 +72,7 @@ handle_error(ssize_t errcode, const char *function_name)
 }
 
 static SV *
-endpoint_descriptor_to_HV(const struct libusb_endpoint_descriptor *endpoint)
+endpoint_descriptor_to_HV(pTHX_ const struct libusb_endpoint_descriptor *endpoint)
 {
   HV *rv = newHV();
   hv_stores(rv, "bLength", newSVuv(endpoint->bLength));
@@ -88,17 +88,17 @@ endpoint_descriptor_to_HV(const struct libusb_endpoint_descriptor *endpoint)
 }
 
 static SV *
-endpoint_array_to_AV(const struct libusb_endpoint_descriptor *endpoint, int num_endpoints)
+endpoint_array_to_AV(pTHX_ const struct libusb_endpoint_descriptor *endpoint, int num_endpoints)
 {
   AV *rv = newAV();
   for (int i = 0; i < num_endpoints; ++i)
-      av_push(rv, endpoint_descriptor_to_HV(&endpoint[i]));
+      av_push(rv, endpoint_descriptor_to_HV(aTHX_ &endpoint[i]));
   return newRV_noinc((SV *) rv);
 }
 
 
 static SV *
-interface_descriptor_to_HV(const struct libusb_interface_descriptor *interface)
+interface_descriptor_to_HV(pTHX_ const struct libusb_interface_descriptor *interface)
 {
   HV *rv = newHV();
   hv_stores(rv, "bLength", newSVuv(interface->bLength));
@@ -115,16 +115,16 @@ interface_descriptor_to_HV(const struct libusb_interface_descriptor *interface)
 }
 
 static SV *
-interface_array_to_AV(const struct libusb_interface *interface)
+interface_array_to_AV(pTHX_ const struct libusb_interface *interface)
 {
   AV *rv = newAV();
   for (int i = 0; i < interface->num_altsetting; ++i)
-    av_push(rv, interface_descriptor_to_HV(&interface->altsetting[i]));
+    av_push(rv, interface_descriptor_to_HV(aTHX_ &interface->altsetting[i]));
   return newRV_noinc((SV *) rv);  
 }
 
 static HV *
-config_descriptor_to_HV(struct libusb_config_descriptor *config)
+config_descriptor_to_HV(pTHX_ struct libusb_config_descriptor *config)
 {
     HV *rv = newHV();
     hv_stores(rv, "bLength", newSVuv(config->bLength));
@@ -286,7 +286,7 @@ CODE:
     struct libusb_config_descriptor *config;
     int rv = libusb_get_active_config_descriptor(dev, &config);
     handle_error(rv, "libusb_get_active_config_descriptor");
-    RETVAL = config_descriptor_to_HV(config);
+    RETVAL = config_descriptor_to_HV(aTHX_ config);
     libusb_free_config_descriptor(config);
 OUTPUT:
     RETVAL
@@ -298,7 +298,7 @@ CODE:
     struct libusb_config_descriptor *config;
     int rv = libusb_get_config_descriptor(dev, config_index, &config);
     handle_error(rv, "libusb_get_config_descriptor");
-    RETVAL = config_descriptor_to_HV(config);
+    RETVAL = config_descriptor_to_HV(aTHX_ config);
     libusb_free_config_descriptor(config);
 OUTPUT:
     RETVAL
