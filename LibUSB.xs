@@ -153,7 +153,7 @@ CODE:
     LibUSB ctx;
     do_not_warn_unused(class);
     int rv = libusb_init(&ctx);
-    handle_error(rv, "libusb_init");
+    handle_error(aTHX_ rv, "libusb_init");
     RETVAL = ctx;
 OUTPUT:
     RETVAL
@@ -168,7 +168,7 @@ libusb_get_device_list(LibUSB ctx)
 PPCODE:
     libusb_device **list;
     ssize_t num = libusb_get_device_list(ctx, &list);
-    handle_error(num, "libusb_get_device_list");
+    handle_error(aTHX_ num, "libusb_get_device_list");
     size_t i;
     for (i = 0; i < num; ++i) {
         SV *tmp = newSV(0);
@@ -208,7 +208,7 @@ PPCODE:
     int len = 20;
     uint8_t port_numbers[len];
     int num = libusb_get_port_numbers(dev, port_numbers, len);
-    handle_error(num, "libusb_get_port_numbers");
+    handle_error(aTHX_ num, "libusb_get_port_numbers");
     int i;
     for (i = 0; i < num; ++i) {
         mXPUSHu(port_numbers[i]);
@@ -227,7 +227,7 @@ int
 libusb_get_max_packet_size(LibUSB::Device dev, unsigned char endpoint)
 CODE:
     int rv = libusb_get_max_packet_size(dev, endpoint);
-    handle_error(rv, "libusb_get_max_packet_size");
+    handle_error(aTHX_ rv, "libusb_get_max_packet_size");
     RETVAL = rv;
 OUTPUT:
     RETVAL
@@ -246,7 +246,7 @@ libusb_open(LibUSB::Device dev)
 CODE:
     libusb_device_handle *handle;
     int rv = libusb_open(dev, &handle);
-    handle_error(rv, "libusb_open");
+    handle_error(aTHX_ rv, "libusb_open");
     RETVAL = handle;
 OUTPUT:
     RETVAL
@@ -259,7 +259,7 @@ libusb_get_device_descriptor(LibUSB::Device dev)
 CODE:
     struct libusb_device_descriptor desc;
     int rv = libusb_get_device_descriptor(dev, &desc);
-    handle_error(rv, "libusb_get_device_descriptor");
+    handle_error(aTHX_ rv, "libusb_get_device_descriptor");
     HV *retval = newHV();
     hv_stores(retval, "bLength", newSVuv(desc.bLength));
     hv_stores(retval, "bDescriptorType", newSVuv(desc.bDescriptorType));
@@ -285,7 +285,7 @@ libusb_get_active_config_descriptor(LibUSB::Device dev)
 CODE:
     struct libusb_config_descriptor *config;
     int rv = libusb_get_active_config_descriptor(dev, &config);
-    handle_error(rv, "libusb_get_active_config_descriptor");
+    handle_error(aTHX_ rv, "libusb_get_active_config_descriptor");
     RETVAL = config_descriptor_to_HV(aTHX_ config);
     libusb_free_config_descriptor(config);
 OUTPUT:
@@ -297,7 +297,7 @@ libusb_get_config_descriptor(LibUSB::Device dev, unsigned config_index)
 CODE:
     struct libusb_config_descriptor *config;
     int rv = libusb_get_config_descriptor(dev, config_index, &config);
-    handle_error(rv, "libusb_get_config_descriptor");
+    handle_error(aTHX_ rv, "libusb_get_config_descriptor");
     RETVAL = config_descriptor_to_HV(aTHX_ config);
     libusb_free_config_descriptor(config);
 OUTPUT:
@@ -322,7 +322,7 @@ libusb_get_configuration(LibUSB::Device::Handle dev)
 CODE:
     int config;
     int rv = libusb_get_configuration(dev, &config);
-    handle_error(rv, "libusb_get_configuration");
+    handle_error(aTHX_ rv, "libusb_get_configuration");
     RETVAL = config;
 OUTPUT:
     RETVAL
@@ -331,43 +331,43 @@ void
 libusb_set_configuration(LibUSB::Device::Handle dev, int configuration)
 CODE:
     int rv = libusb_set_configuration(dev, configuration);
-    handle_error(rv, "libusb_set_configuration");
+    handle_error(aTHX_ rv, "libusb_set_configuration");
 
 void
 libusb_claim_interface(LibUSB::Device::Handle dev, int interface_number)
 CODE:
     int rv = libusb_claim_interface(dev, interface_number);
-    handle_error(rv, "libusb_claim_interface");
+    handle_error(aTHX_ rv, "libusb_claim_interface");
 
 void
 libusb_release_interface(LibUSB::Device::Handle dev, int interface_number)
 CODE:
     int rv = libusb_release_interface(dev, interface_number);
-    handle_error(rv, "libusb_release_interface");
+    handle_error(aTHX_ rv, "libusb_release_interface");
 
 void
 libusb_set_interface_alt_setting(LibUSB::Device::Handle dev, int interface_number, int alternate_setting)
 CODE:
     int rv = libusb_set_interface_alt_setting(dev, interface_number, alternate_setting);
-    handle_error(rv, "libusb_set_interface_alt_setting");
+    handle_error(aTHX_ rv, "libusb_set_interface_alt_setting");
 
 void
 libusb_clear_halt(LibUSB::Device::Handle dev, unsigned endpoint)
 CODE:
     int rv = libusb_clear_halt(dev, endpoint);
-    handle_error(rv, "libusb_clear_halt");
+    handle_error(aTHX_ rv, "libusb_clear_halt");
 
 void
 libusb_reset_device(LibUSB::Device::Handle dev)
 CODE:
     int rv = libusb_reset_device(dev);
-    handle_error(rv, "libusb_reset_device");
+    handle_error(aTHX_ rv, "libusb_reset_device");
 
 int
 libusb_kernel_driver_active(LibUSB::Device::Handle dev, int interface_number)
 CODE:
     int rv = libusb_kernel_driver_active(dev, interface_number);
-    handle_error(rv, "libusb_kernel_driver_active");
+    handle_error(aTHX_ rv, "libusb_kernel_driver_active");
     RETVAL = rv;
 OUTPUT:
     RETVAL
@@ -377,20 +377,20 @@ void
 libusb_detach_kernel_driver(LibUSB::Device::Handle dev, int interface_number)
 CODE:
     int rv = libusb_detach_kernel_driver(dev, interface_number);
-    handle_error(rv, "libusb_detach_kernel_driver");
+    handle_error(aTHX_ rv, "libusb_detach_kernel_driver");
 
 
 void
 libusb_attach_kernel_driver(LibUSB::Device::Handle dev, int interface_number)
 CODE:
     int rv = libusb_attach_kernel_driver(dev, interface_number);
-    handle_error(rv, "libusb_attach_kernel_driver");
+    handle_error(aTHX_ rv, "libusb_attach_kernel_driver");
 
 void
 libusb_set_auto_detach_kernel_driver(LibUSB::Device::Handle dev, int enable)
 CODE:
     int rv = libusb_set_auto_detach_kernel_driver(dev, enable);
-    handle_error(rv, "libusb_set_auto_detach_kernel_driver");
+    handle_error(aTHX_ rv, "libusb_set_auto_detach_kernel_driver");
 
 
    
@@ -406,7 +406,7 @@ CODE:
         Renew(buffer, buffer_len, unsigned char);
         rv = libusb_get_string_descriptor_ascii(dev, desc_index, buffer,
                                                 buffer_len);
-        handle_error(rv, "libusb_get_string_descriptor_ascii");
+        handle_error(aTHX_ rv, "libusb_get_string_descriptor_ascii");
         if (rv < buffer_len)
             break;
         buffer_len = (buffer_len * 3) / 2;
@@ -427,7 +427,7 @@ CODE:
         Renew(buffer, buffer_len, unsigned char);
         rv = libusb_get_descriptor(dev, desc_type, desc_index, buffer,
                                    buffer_len);
-        handle_error(rv, "libusb_get_descriptor");
+        handle_error(aTHX_ rv, "libusb_get_descriptor");
         if (rv < buffer_len)
             break;
         buffer_len = (buffer_len * 3) / 2;
@@ -448,7 +448,7 @@ CODE:
         Renew(buffer, buffer_len, unsigned char);
         rv = libusb_get_string_descriptor(dev, desc_index, langid, buffer,
                                           buffer_len);
-        handle_error(rv, "libusb_get_string_descriptor");
+        handle_error(aTHX_ rv, "libusb_get_string_descriptor");
         if (rv < buffer_len)
             break;
         buffer_len = (buffer_len * 3) / 2;
@@ -480,7 +480,7 @@ CODE:
     int rv = libusb_control_transfer(handle, bmRequestType, bRequest, wValue,
                                      wIndex, (unsigned char *) bytes, len,
                                      timeout);
-    handle_error(rv, "libusb_control_transfer (write)");
+    handle_error(aTHX_ rv, "libusb_control_transfer (write)");
 
 
 SV *
@@ -490,7 +490,7 @@ CODE:
     Newx(data, length, unsigned char);
     int rv = libusb_control_transfer(handle, bmRequestType, bRequest, wValue,
                                      wIndex, data, length, timeout);
-    handle_error(rv, "libusb_control_transfer (read)");
+    handle_error(aTHX_ rv, "libusb_control_transfer (read)");
     RETVAL = newSVpvn((const char *) data, rv);
     Safefree(data);
 OUTPUT:
@@ -509,7 +509,7 @@ CODE:
                                   len, &transferred, timeout);
     /* maybe add variant of this function which still returns on
        ERROR_TIMEOUT, as transferred is populated in that case. */
-    handle_error(rv, "libusb_bulk_transfer (write)");
+    handle_error(aTHX_ rv, "libusb_bulk_transfer (write)");
     RETVAL = transferred;
 OUTPUT:
     RETVAL
@@ -525,7 +525,7 @@ CODE:
     int transferred;
     int rv = libusb_bulk_transfer(handle, endpoint, data, length,
                                   &transferred, timeout);
-    handle_error(rv, "libusb_bulk_transfer (read)");
+    handle_error(aTHX_ rv, "libusb_bulk_transfer (read)");
     RETVAL = newSVpvn((const char *) data, transferred);
     Safefree(data);
 OUTPUT:
@@ -544,7 +544,7 @@ CODE:
                                        len, &transferred, timeout);
     /* maybe add variant of this function which still returns on
        ERROR_TIMEOUT, as transferred is populated in that case. */
-    handle_error(rv, "libusb_interrupt_transfer (write)");
+    handle_error(aTHX_ rv, "libusb_interrupt_transfer (write)");
     RETVAL = transferred;
 OUTPUT:
     RETVAL
@@ -560,7 +560,7 @@ CODE:
     int transferred;
     int rv = libusb_interrupt_transfer(handle, endpoint, data, length,
                                        &transferred, timeout);
-    handle_error(rv, "libusb_interrupt_transfer (read)");
+    handle_error(aTHX_ rv, "libusb_interrupt_transfer (read)");
     RETVAL = newSVpvn((const char *) data, transferred);
     Safefree(data);
 OUTPUT:
