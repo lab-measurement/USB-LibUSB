@@ -109,7 +109,7 @@ interface_descriptor_to_HV(pTHX_ const struct libusb_interface_descriptor *inter
   hv_stores(rv, "bInterfaceClass", newSVuv(interface->bInterfaceClass));
   hv_stores(rv, "bInterfaceProtocol", newSVuv(interface->bInterfaceProtocol));
   hv_stores(rv, "iInterface", newSVuv(interface->iInterface));
-  hv_stores(rv, "endpoint", endpoint_array_to_AV(interface->endpoint, interface->bNumEndpoints));
+  hv_stores(rv, "endpoint", endpoint_array_to_AV(aTHX_ interface->endpoint, interface->bNumEndpoints));
   hv_stores(rv, "extra", newSVpvn((const char *) interface->extra, interface->extra_length));
   return newRV_noinc((SV *) rv);
 }
@@ -135,7 +135,7 @@ config_descriptor_to_HV(pTHX_ struct libusb_config_descriptor *config)
     hv_stores(rv, "iConfiguration", newSVuv(config->iConfiguration));
     hv_stores(rv, "bmAttributes", newSVuv(config->bmAttributes));
     hv_stores(rv, "MaxPower", newSVuv(config->MaxPower));
-    hv_stores(rv, "interface", interface_array_to_AV(config->interface));
+    hv_stores(rv, "interface", interface_array_to_AV(aTHX_ config->interface));
     hv_stores(rv, "extra", newSVpvn((const char *) config->extra, config->extra_length));
     return rv;
 }
