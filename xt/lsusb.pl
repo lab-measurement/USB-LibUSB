@@ -3,14 +3,29 @@ use 5.010;
 use warnings;
 use strict;
 
+use blib;
 use LibUSB;
-use YAML::XS;
+use Data::Dumper;
 
-my $ctx = LibUSB->init();
+my $rv;
+my $ctx;
+my @dev_list;
 
-my @dev_list = $ctx->get_device_list();
+sub handle_error {
+    my ($rv, $msg) = @_;
+    return if $rv >= 0;
+    die "in $msg: rv: $rv, error_name: ", libusb_error_name($rv),", error string: ", libusb_strerror($rv);
+}
+
+($rv, $ctx) = LibUSB->init();
+handle_error($rv, "init");
+
+($rv,  @dev_list) = $ctx->get_device_list();
+handle_error($rv, "get_device_list");
 
 say "number of devices on the USB: ", (@dev_list + 0);
+
 for my $dev (@dev_list) {
-    print Dump $dev->get_device_descriptor();
+    my ($rv, $desc) = $dev->get_device_descriptor();
+    print Dumper $desc;
 }

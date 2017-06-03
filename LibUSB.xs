@@ -18,59 +18,6 @@ do_not_warn_unused(void *x __attribute__((__unused__)))
 {
 }
 
-
-#define CROAK(arg1, ...) \
-    call_va_list(aTHX_ "Carp::croak", arg1, ## __VA_ARGS__, NULL)
-#define CARP(arg1, ...) \
-    call_va_list(aTHX_ "Carp::carp", arg1, ## __VA_ARGS__, NULL)
-
-static void
-call_va_list(pTHX_ char *func, char *arg1, ...)
-{
-    va_list ap;
-    va_start(ap, arg1);
-    
-    /* See perlcall.  */
-    dSP;
-    
-    ENTER;
-    SAVETMPS;
-    
-    PUSHMARK(SP);
-    mXPUSHp(arg1, strlen(arg1));
-    while (1) {
-        char *arg = va_arg(ap, char *);
-        if (arg == NULL)
-            break;
-        mXPUSHp(arg, strlen(arg));
-    }
-    PUTBACK;
-
-    call_pv(func, G_DISCARD);
-
-    FREETMPS;
-    LEAVE;
-}
-
-#define ALLOC_START_SIZE 100
-
-static void
-handle_error(pTHX_ ssize_t errcode, const char *function_name)
-{
-    /* Some functions like libusb_get_device_list return positive numbers
-     on success. So do not check for == 0.  */
-    if (errcode >= 0)
-        return;
-    const char *error = libusb_strerror(errcode);
-    if (errno) {
-        char *errno_error = strerror(errno);
-        CROAK("Error in ", function_name, ": ", error, ". errno: ",
-        errno_error);
-    }
-    else
-        CROAK("Error in ", function_name, ": ", error);
-}
-
 static SV *
 endpoint_descriptor_to_HV(pTHX_ const struct libusb_endpoint_descriptor *endpoint)
 {
@@ -123,8 +70,8 @@ interface_array_to_AV(pTHX_ const struct libusb_interface *interface)
   return newRV_noinc((SV *) rv);  
 }
 
-static HV *
-config_descriptor_to_HV(pTHX_ struct libusb_config_descriptor *config)
+static SV *
+config_descriptor_to_RV(pTHX_ struct libusb_config_descriptor *config)
 {
     HV *rv = newHV();
     hv_stores(rv, "bLength", newSVuv(config->bLength));
@@ -137,8 +84,45 @@ config_descriptor_to_HV(pTHX_ struct libusb_config_descriptor *config)
     hv_stores(rv, "MaxPower", newSVuv(config->MaxPower));
     hv_stores(rv, "interface", interface_array_to_AV(aTHX_ config->interface));
     hv_stores(rv, "extra", newSVpvn((const char *) config->extra, config->extra_length));
+    return newRV_noinc((SV *) rv);
+}
+
+static SV *
+device_descriptor_to_RV(pTHX_ struct libusb_device_descriptor *desc)
+{
+    HV *rv = newHV();
+    hv_stores(rv, "bLength", newSVuv(desc->bLength));    
+    hv_stores(rv, "bDescriptorType", newSVuv(desc->bDescriptorType));
+    hv_stores(rv, "bcdUSB", newSVuv(desc->bcdUSB));
+    hv_stores(rv, "bDeviceClass", newSVuv(desc->bDeviceClass));
+    hv_stores(rv, "bDeviceSubClass", newSVuv(desc->bDeviceSubClass));
+    hv_stores(rv, "bDeviceProtocol", newSVuv(desc->bDeviceProtocol));
+    hv_stores(rv, "bMaxPacketSize0", newSVuv(desc->bMaxPacketSize0));
+    hv_stores(rv, "idVendor", newSVuv(desc->idVendor));
+    hv_stores(rv, "idProduct", newSVuv(desc->idProduct));
+    hv_stores(rv, "bcdDevice", newSVuv(desc->bcdDevice));
+    hv_stores(rv, "iManufacturer", newSVuv(desc->iManufacturer));
+    hv_stores(rv, "iProduct", newSVuv(desc->iProduct));
+    hv_stores(rv, "iSerialNumber", newSVuv(desc->iSerialNumber));
+    hv_stores(rv, "bNumConfigurations", newSVuv(desc->bNumConfigurations));
+    return newRV_noinc((SV *) rv);
+}
+
+static SV *
+pointer_object(pTHX_ const char *class_name, void *pv)
+{
+    SV *rv = newSV(0);
+    sv_setref_pv(rv, class_name, pv);
     return rv;
 }
+
+MODULE = LibUSB      PACKAGE = LibUSB
+
+const char *
+libusb_error_name(int error_code)
+
+const char *
+libusb_strerror(int error_code)
 
 MODULE = LibUSB		PACKAGE = LibUSB	 PREFIX = libusb_	
 
@@ -147,16 +131,14 @@ INCLUDE: const-xs.inc
 void
 libusb_set_debug(LibUSB ctx, int level)
 
-LibUSB
+void
 libusb_init(char *class)
-CODE:
-    LibUSB ctx;
-    do_not_warn_unused(class);
+PPCODE:
+    libusb_context *ctx;
     int rv = libusb_init(&ctx);
-    handle_error(aTHX_ rv, "libusb_init");
-    RETVAL = ctx;
-OUTPUT:
-    RETVAL
+    mXPUSHi(rv);
+    if (rv == 0)
+        mXPUSHs(pointer_object(class, ctx));
 
 
 
@@ -168,31 +150,26 @@ libusb_get_device_list(LibUSB ctx)
 PPCODE:
     libusb_device **list;
     ssize_t num = libusb_get_device_list(ctx, &list);
-    handle_error(aTHX_ num, "libusb_get_device_list");
-    size_t i;
+    mXPUSHi(num);
+    ssize_t i;
     for (i = 0; i < num; ++i) {
         SV *tmp = newSV(0);
         sv_setref_pv(tmp, "LibUSB::Device", (void *) list[i]);
         mXPUSHs(tmp);
     }
-    libusb_free_device_list(list, 0);
+    if (num >= 0)
+        libusb_free_device_list(list, 0);
 
 LibUSB::Device::Handle
 libusb_open_device_with_vid_pid(LibUSB ctx, unsigned vendor_id, unsigned product_id)
-CODE:
-    libusb_device_handle *handle;
-    handle = libusb_open_device_with_vid_pid(ctx, vendor_id, product_id);
-    if (handle == NULL)
-        CROAK("Error in libusb_open_device_with_vid_pid.",
-              " use libusb_open for detailed error message.");
-    RETVAL = handle;
-OUTPUT:
-    RETVAL
-        
+
+
 void
 DESTROY(LibUSB ctx)
 CODE:
     do_not_warn_unused(ctx);
+
+
 
 MODULE = LibUSB      PACKAGE = LibUSB::Device       PREFIX = libusb_
 
@@ -208,7 +185,7 @@ PPCODE:
     int len = 20;
     uint8_t port_numbers[len];
     int num = libusb_get_port_numbers(dev, port_numbers, len);
-    handle_error(aTHX_ num, "libusb_get_port_numbers");
+    mXPUSHi(num);
     int i;
     for (i = 0; i < num; ++i) {
         mXPUSHu(port_numbers[i]);
@@ -225,13 +202,6 @@ libusb_get_device_speed(LibUSB::Device dev)
 
 int
 libusb_get_max_packet_size(LibUSB::Device dev, unsigned char endpoint)
-CODE:
-    int rv = libusb_get_max_packet_size(dev, endpoint);
-    handle_error(aTHX_ rv, "libusb_get_max_packet_size");
-    RETVAL = rv;
-OUTPUT:
-    RETVAL
-
     
 LibUSB::Device
 libusb_ref_device(LibUSB::Device dev)
@@ -240,68 +210,50 @@ libusb_ref_device(LibUSB::Device dev)
 void
 libusb_unref_device(LibUSB::Device dev)
 
-
-LibUSB::Device::Handle
+void
 libusb_open(LibUSB::Device dev)
-CODE:
+PPCODE:
     libusb_device_handle *handle;
     int rv = libusb_open(dev, &handle);
-    handle_error(aTHX_ rv, "libusb_open");
-    RETVAL = handle;
-OUTPUT:
-    RETVAL
-
+    mXPUSHi(rv);
+    if (rv == 0)
+        mXPUSHs(pointer_object("LibUSB::Device::Handle", handle));
+    
 void
 libusb_close(LibUSB::Device::Handle handle)
 
-HV *
+
+
+void
 libusb_get_device_descriptor(LibUSB::Device dev)
-CODE:
+PPCODE:
     struct libusb_device_descriptor desc;
     int rv = libusb_get_device_descriptor(dev, &desc);
-    handle_error(aTHX_ rv, "libusb_get_device_descriptor");
-    HV *retval = newHV();
-    hv_stores(retval, "bLength", newSVuv(desc.bLength));
-    hv_stores(retval, "bDescriptorType", newSVuv(desc.bDescriptorType));
-    hv_stores(retval, "bcdUSB", newSVuv(desc.bcdUSB));
-    hv_stores(retval, "bDeviceClass", newSVuv(desc.bDeviceClass));
-    hv_stores(retval, "bDeviceSubClass", newSVuv(desc.bDeviceSubClass));
-    hv_stores(retval, "bDeviceProtocol", newSVuv(desc.bDeviceProtocol));
-    hv_stores(retval, "bMaxPacketSize0", newSVuv(desc.bMaxPacketSize0));
-    hv_stores(retval, "idVendor", newSVuv(desc.idVendor));
-    hv_stores(retval, "idProduct", newSVuv(desc.idProduct));
-    hv_stores(retval, "bcdDevice", newSVuv(desc.bcdDevice));
-    hv_stores(retval, "iManufacturer", newSVuv(desc.iManufacturer));
-    hv_stores(retval, "iProduct", newSVuv(desc.iProduct));
-    hv_stores(retval, "iSerialNumber", newSVuv(desc.iSerialNumber));
-    hv_stores(retval, "bNumConfigurations", newSVuv(desc.bNumConfigurations));
-    RETVAL = retval;
-OUTPUT:
-    RETVAL
+    mXPUSHi(rv);
+    // Function always succeeds since libusb 1.0.16
+    mXPUSHs(device_descriptor_to_RV(pTHX_ &desc));
 
     
-HV *
+void
 libusb_get_active_config_descriptor(LibUSB::Device dev)
-CODE:
+PPCODE:
     struct libusb_config_descriptor *config;
     int rv = libusb_get_active_config_descriptor(dev, &config);
-    handle_error(aTHX_ rv, "libusb_get_active_config_descriptor");
-    RETVAL = config_descriptor_to_HV(aTHX_ config);
-    libusb_free_config_descriptor(config);
-OUTPUT:
-    RETVAL
+    mXPUSHi(rv);
+    if (rv == 0)
+        mXPUSHs(config_descriptor_to_RV(aTHX_ config));
 
     
-HV *
+void
 libusb_get_config_descriptor(LibUSB::Device dev, unsigned config_index)
-CODE:
+PPCODE:
     struct libusb_config_descriptor *config;
     int rv = libusb_get_config_descriptor(dev, config_index, &config);
-    handle_error(aTHX_ rv, "libusb_get_config_descriptor");
-    RETVAL = config_descriptor_to_HV(aTHX_ config);
-    libusb_free_config_descriptor(config);
-OUTPUT:
-    RETVAL
+    mXPUSHi(rv);
+    if (rv == 0) {
+        mXPUSHs(config_descriptor_to_RV(aTHX_ config));
+        libusb_free_config_descriptor(config);
+    }
 
     
 void
@@ -317,146 +269,79 @@ MODULE = LibUSB      PACKAGE = LibUSB::Device::Handle       PREFIX = libusb_
 LibUSB::Device
 libusb_get_device(LibUSB::Device::Handle dev_handle)
 
-int
+void
 libusb_get_configuration(LibUSB::Device::Handle dev)
-CODE:
+PPCODE:
     int config;
     int rv = libusb_get_configuration(dev, &config);
-    handle_error(aTHX_ rv, "libusb_get_configuration");
-    RETVAL = config;
-OUTPUT:
-    RETVAL
+    mXPUSHi(rv);
+    if (rv == 0)
+        mXPUSHi(config);
 
-void
+int
 libusb_set_configuration(LibUSB::Device::Handle dev, int configuration)
-CODE:
-    int rv = libusb_set_configuration(dev, configuration);
-    handle_error(aTHX_ rv, "libusb_set_configuration");
 
-void
+int
 libusb_claim_interface(LibUSB::Device::Handle dev, int interface_number)
-CODE:
-    int rv = libusb_claim_interface(dev, interface_number);
-    handle_error(aTHX_ rv, "libusb_claim_interface");
 
-void
+int
 libusb_release_interface(LibUSB::Device::Handle dev, int interface_number)
-CODE:
-    int rv = libusb_release_interface(dev, interface_number);
-    handle_error(aTHX_ rv, "libusb_release_interface");
 
-void
+int
 libusb_set_interface_alt_setting(LibUSB::Device::Handle dev, int interface_number, int alternate_setting)
-CODE:
-    int rv = libusb_set_interface_alt_setting(dev, interface_number, alternate_setting);
-    handle_error(aTHX_ rv, "libusb_set_interface_alt_setting");
 
-void
+int
 libusb_clear_halt(LibUSB::Device::Handle dev, unsigned endpoint)
-CODE:
-    int rv = libusb_clear_halt(dev, endpoint);
-    handle_error(aTHX_ rv, "libusb_clear_halt");
 
-void
+int
 libusb_reset_device(LibUSB::Device::Handle dev)
-CODE:
-    int rv = libusb_reset_device(dev);
-    handle_error(aTHX_ rv, "libusb_reset_device");
 
 int
 libusb_kernel_driver_active(LibUSB::Device::Handle dev, int interface_number)
-CODE:
-    int rv = libusb_kernel_driver_active(dev, interface_number);
-    handle_error(aTHX_ rv, "libusb_kernel_driver_active");
-    RETVAL = rv;
-OUTPUT:
-    RETVAL
 
-
-void
+int
 libusb_detach_kernel_driver(LibUSB::Device::Handle dev, int interface_number)
-CODE:
-    int rv = libusb_detach_kernel_driver(dev, interface_number);
-    handle_error(aTHX_ rv, "libusb_detach_kernel_driver");
 
-
-void
+int
 libusb_attach_kernel_driver(LibUSB::Device::Handle dev, int interface_number)
-CODE:
-    int rv = libusb_attach_kernel_driver(dev, interface_number);
-    handle_error(aTHX_ rv, "libusb_attach_kernel_driver");
+
+int
+libusb_set_auto_detach_kernel_driver(LibUSB::Device::Handle dev, int enable)
 
 void
-libusb_set_auto_detach_kernel_driver(LibUSB::Device::Handle dev, int enable)
-CODE:
-    int rv = libusb_set_auto_detach_kernel_driver(dev, enable);
-    handle_error(aTHX_ rv, "libusb_set_auto_detach_kernel_driver");
-
-
-   
-
-
-SV *
-libusb_get_string_descriptor_ascii(LibUSB::Device::Handle dev, unsigned desc_index)
-CODE:
-    int buffer_len = ALLOC_START_SIZE;
-    unsigned char *buffer = NULL;
-    int rv;
-    while (1) {
-        Renew(buffer, buffer_len, unsigned char);
-        rv = libusb_get_string_descriptor_ascii(dev, desc_index, buffer,
-                                                buffer_len);
-        handle_error(aTHX_ rv, "libusb_get_string_descriptor_ascii");
-        if (rv < buffer_len)
-            break;
-        buffer_len = (buffer_len * 3) / 2;
-    }
-    RETVAL = newSVpvn((const char *) buffer, rv);
+libusb_get_string_descriptor_ascii(LibUSB::Device::Handle dev, unsigned desc_index, int length)
+PPCODE:
+    char *buffer;
+    Newx(buffer, length, char);
+    int rv = libusb_get_string_descriptor_ascii(dev, desc_index, (unsigned char *) buffer, length);
+    mXPUSHi(rv);
+    if (rv >= 0)
+        mXPUSHp(buffer, rv);
     Safefree(buffer);
-OUTPUT:
-    RETVAL
 
 
-SV *
-libusb_get_descriptor(LibUSB::Device::Handle dev, unsigned desc_type, unsigned desc_index)
-CODE:
-    int buffer_len = ALLOC_START_SIZE;
-    unsigned char *buffer = NULL;
-    int rv;
-    while (1) {
-        Renew(buffer, buffer_len, unsigned char);
-        rv = libusb_get_descriptor(dev, desc_type, desc_index, buffer,
-                                   buffer_len);
-        handle_error(aTHX_ rv, "libusb_get_descriptor");
-        if (rv < buffer_len)
-            break;
-        buffer_len = (buffer_len * 3) / 2;
-    }
-    RETVAL = newSVpvn((const char *) buffer, rv);
+void
+libusb_get_descriptor(LibUSB::Device::Handle dev, unsigned desc_type, unsigned desc_index, int length)
+PPCODE:
+    char *buffer;
+    Newx(buffer, length, char);
+    int rv = libusb_get_descriptor(dev, desc_type, desc_index, (unsigned char *) buffer, length);
+    mXPUSHi(rv);
+    if (rv >= 0)
+        mXPUSHp(buffer, rv);
     Safefree(buffer);
-OUTPUT:
-    RETVAL
 
 
-SV *
-libusb_get_string_descriptor(LibUSB::Device::Handle dev, unsigned desc_index, unsigned langid)
-CODE:
-    int buffer_len = ALLOC_START_SIZE;
-    unsigned char *buffer = NULL;
-    int rv;
-    while (1) {
-        Renew(buffer, buffer_len, unsigned char);
-        rv = libusb_get_string_descriptor(dev, desc_index, langid, buffer,
-                                          buffer_len);
-        handle_error(aTHX_ rv, "libusb_get_string_descriptor");
-        if (rv < buffer_len)
-            break;
-        buffer_len = (buffer_len * 3) / 2;
-    }
-    RETVAL = newSVpvn((const char *) buffer, rv);
+void
+libusb_get_string_descriptor(LibUSB::Device::Handle dev, unsigned desc_index, unsigned langid, int length)
+PPCODE:
+    char *buffer;
+    Newx(buffer, length, char);
+    int rv = libusb_get_string_descriptor(dev, desc_index, langid, (unsigned char *) buffer, length);
+    mXPUSHi(rv);
+    if (rv >= 0)
+        mXPUSHp(buffer, rv);
     Safefree(buffer);
-OUTPUT:
-    RETVAL
 
 
 ############################
@@ -473,95 +358,70 @@ CODE:
 
 void
 libusb_control_transfer_write(LibUSB::Device::Handle handle, unsigned bmRequestType, unsigned bRequest, unsigned wValue, unsigned wIndex, SV *data, unsigned timeout)
-CODE:
+PPCODE:
     char *bytes;
     STRLEN len;
     bytes = SvPV(data, len);
-    int rv = libusb_control_transfer(handle, bmRequestType, bRequest, wValue,
-                                     wIndex, (unsigned char *) bytes, len,
-                                     timeout);
-    handle_error(aTHX_ rv, "libusb_control_transfer (write)");
+    mXPUSHi(libusb_control_transfer(handle, bmRequestType, bRequest, wValue, wIndex, (unsigned char *) bytes, len, timeout));
 
-
-SV *
+void
 libusb_control_transfer_read(LibUSB::Device::Handle handle, unsigned bmRequestType, unsigned bRequest, unsigned wValue, unsigned wIndex, unsigned length, unsigned timeout)
-CODE:
-    unsigned char *data;
-    Newx(data, length, unsigned char);
-    int rv = libusb_control_transfer(handle, bmRequestType, bRequest, wValue,
-                                     wIndex, data, length, timeout);
-    handle_error(aTHX_ rv, "libusb_control_transfer (read)");
-    RETVAL = newSVpvn((const char *) data, rv);
+PPCODE:
+    char *data;
+    Newx(data, length, char);
+    int rv = libusb_control_transfer(handle, bmRequestType, bRequest, wValue, wIndex, (unsigned char *) data, length, timeout);
+    mXPUSHi(rv);
+    if (rv >= 0)
+        mXPUSHp(data, rv);
     Safefree(data);
-OUTPUT:
-    RETVAL
 
-
-int
+# Check whether endpoint is host-to-device in high-level code
+void
 libusb_bulk_transfer_write(LibUSB::Device::Handle handle, unsigned endpoint, SV *data, unsigned timeout)
-CODE:
-    if ((endpoint & 0x80) != LIBUSB_ENDPOINT_OUT)
-        CROAK("not an host-to-device endpoint");
+PPCODE:
     STRLEN len;
     char *bytes = SvPV(data, len);
     int transferred;
-    int rv = libusb_bulk_transfer(handle, endpoint, (unsigned char *) bytes,
-                                  len, &transferred, timeout);
-    /* maybe add variant of this function which still returns on
-       ERROR_TIMEOUT, as transferred is populated in that case. */
-    handle_error(aTHX_ rv, "libusb_bulk_transfer (write)");
-    RETVAL = transferred;
-OUTPUT:
-    RETVAL
+    int rv = libusb_bulk_transfer(handle, endpoint, (unsigned char *) bytes, len, &transferred, timeout);
+    mXPUSHi(rv);
+    if (rv == 0 || rv == LIBUSB_ERROR_TIMEOUT)
+        mXPUSHi(transferred);
 
-
-SV *
+# Check whether endpoint is device-to-host in high-level code
+void
 libusb_bulk_transfer_read(LibUSB::Device::Handle handle, unsigned endpoint, int length, unsigned timeout)
-CODE:
-    if ((endpoint & 0x80) != LIBUSB_ENDPOINT_IN)
-        CROAK("not an device-to-host endpoint");
-    unsigned char *data;
-    Newx(data, length, unsigned char);
+PPCODE:
+    char *data;
+    Newx(data, length, char);
     int transferred;
-    int rv = libusb_bulk_transfer(handle, endpoint, data, length,
-                                  &transferred, timeout);
-    handle_error(aTHX_ rv, "libusb_bulk_transfer (read)");
-    RETVAL = newSVpvn((const char *) data, transferred);
+    int rv = libusb_bulk_transfer(handle, endpoint, (unsigned char *) data, length, &transferred, timeout);
+    mXPUSHi(rv);
+    if (rv == 0 || rv == LIBUSB_ERROR_TIMEOUT)
+        mXPUSHp(data, transferred);
     Safefree(data);
-OUTPUT:
-    RETVAL
 
-int
+# Check whether endpoint is host-to-device in high-level code
+void
 libusb_interrupt_transfer_write(LibUSB::Device::Handle handle, unsigned endpoint, SV *data, unsigned timeout)
-CODE:
-    if ((endpoint & 0x80) != LIBUSB_ENDPOINT_OUT)
-        CROAK("not an host-to-device endpoint");
+PPCODE:
     STRLEN len;
     char *bytes = SvPV(data, len);
     int transferred;
-    int rv = libusb_interrupt_transfer(handle, endpoint,
-                                       (unsigned char *) bytes,
-                                       len, &transferred, timeout);
-    /* maybe add variant of this function which still returns on
-       ERROR_TIMEOUT, as transferred is populated in that case. */
-    handle_error(aTHX_ rv, "libusb_interrupt_transfer (write)");
-    RETVAL = transferred;
-OUTPUT:
-    RETVAL
+    int rv = libusb_interrupt_transfer(handle, endpoint, (unsigned char *) bytes, len, &transferred, timeout);
+    mXPUSHi(rv);
+    if (rv == 0 || rv == LIBUSB_ERROR_TIMEOUT)
+        mXPUSHi(transferred);
 
-
-SV *
+# Check whether endpoint is device-to-host in high-level code
+void
 libusb_interrupt_transfer_read(LibUSB::Device::Handle handle, unsigned endpoint, int length, unsigned timeout)
-CODE:
-    if ((endpoint & 0x80) != LIBUSB_ENDPOINT_IN)
-        CROAK("not an device-to-host endpoint");
-    unsigned char *data;
-    Newx(data, length, unsigned char);
+PPCODE:
+    char *data;
+    Newx(data, length, char);
     int transferred;
-    int rv = libusb_interrupt_transfer(handle, endpoint, data, length,
-                                       &transferred, timeout);
-    handle_error(aTHX_ rv, "libusb_interrupt_transfer (read)");
-    RETVAL = newSVpvn((const char *) data, transferred);
+    int rv = libusb_interrupt_transfer(handle, endpoint, (unsigned char *) data, length, &transferred, timeout);
+    mXPUSHi(rv);
+    if (rv == 0 || rv == LIBUSB_ERROR_TIMEOUT)
+        mXPUSHp(data, transferred);
     Safefree(data);
-OUTPUT:
-    RETVAL
+    
