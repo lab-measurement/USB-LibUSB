@@ -362,6 +362,8 @@ PPCODE:
     char *bytes;
     STRLEN len;
     bytes = SvPV(data, len);
+    if (len == 0)
+        bytes = NULL;
     mXPUSHi(libusb_control_transfer(handle, bmRequestType, bRequest, wValue, wIndex, (unsigned char *) bytes, len, timeout));
 
 void
