@@ -109,6 +109,19 @@ device_descriptor_to_RV(pTHX_ struct libusb_device_descriptor *desc)
 }
 
 static SV *
+version_to_RV(pTHX_ struct libusb_version *version)
+{
+    HV *rv = newHV();
+    hv_stores(rv, "major", newSVuv(version->major));
+    hv_stores(rv, "minor", newSVuv(version->minor));
+    hv_stores(rv, "micro", newSVuv(version->micro));
+    hv_stores(rv, "nano", newSVuv(version->nano));
+    hv_stores(rv, "rc", newSVpv(version->rc, 0));
+    # "describe" key is for ABI compatibilty only => do not implement
+    return newRV_noinc((SV *) rv);
+}
+
+static SV *
 pointer_object(pTHX_ const char *class_name, void *pv)
 {
     SV *rv = newSV(0);
@@ -118,11 +131,28 @@ pointer_object(pTHX_ const char *class_name, void *pv)
 
 MODULE = LibUSB      PACKAGE = LibUSB
 
+int
+libusb_has_capability(unsigned capability)
+
+
 const char *
 libusb_error_name(int error_code)
 
+
+void
+libusb_get_version(void)
+PPCODE:
+    struct libusb_version *version = libusb_get_version();
+    mXPUSHs(version_to_RV(aTHX_ version));
+
+
+int
+libusb_set_locale(const char *locale)
+
+
 const char *
 libusb_strerror(int error_code)
+
 
 MODULE = LibUSB		PACKAGE = LibUSB	 PREFIX = libusb_	
 
@@ -191,18 +221,28 @@ PPCODE:
         mXPUSHu(port_numbers[i]);
     }
 
+# libusb_get_port_path is deprecated => do not implement
+
 LibUSB::Device
 libusb_get_parent(LibUSB::Device dev)
+
 
 unsigned
 libusb_get_device_address(LibUSB::Device dev)
 
+
 int
 libusb_get_device_speed(LibUSB::Device dev)
 
+
 int
 libusb_get_max_packet_size(LibUSB::Device dev, unsigned char endpoint)
-    
+
+
+int
+libusb_get_max_iso_packet_size(LibUSB::Device dev, unsigned char endpoint)
+
+
 LibUSB::Device
 libusb_ref_device(LibUSB::Device dev)
 
@@ -231,7 +271,7 @@ PPCODE:
     int rv = libusb_get_device_descriptor(dev, &desc);
     mXPUSHi(rv);
     // Function always succeeds since libusb 1.0.16
-    mXPUSHs(device_descriptor_to_RV(pTHX_ &desc));
+    mXPUSHs(device_descriptor_to_RV(aTHX_ &desc));
 
     
 void
