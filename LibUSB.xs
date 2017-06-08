@@ -109,7 +109,7 @@ device_descriptor_to_RV(pTHX_ struct libusb_device_descriptor *desc)
 }
 
 static SV *
-version_to_RV(pTHX_ struct libusb_version *version)
+version_to_RV(pTHX_ const struct libusb_version *version)
 {
     HV *rv = newHV();
     hv_stores(rv, "major", newSVuv(version->major));
@@ -117,7 +117,7 @@ version_to_RV(pTHX_ struct libusb_version *version)
     hv_stores(rv, "micro", newSVuv(version->micro));
     hv_stores(rv, "nano", newSVuv(version->nano));
     hv_stores(rv, "rc", newSVpv(version->rc, 0));
-    # "describe" key is for ABI compatibilty only => do not implement
+    // "describe" key is for ABI compatibilty only => do not implement
     return newRV_noinc((SV *) rv);
 }
 
@@ -142,12 +142,12 @@ libusb_error_name(int error_code)
 void
 libusb_get_version(void)
 PPCODE:
-    struct libusb_version *version = libusb_get_version();
+    const struct libusb_version *version = libusb_get_version();
     mXPUSHs(version_to_RV(aTHX_ version));
 
 
 int
-libusb_set_locale(const char *locale)
+libusb_setlocale(const char *locale)
 
 
 const char *
