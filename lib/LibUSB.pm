@@ -183,45 +183,269 @@ XSLoader::load('LibUSB', $VERSION);
 # Autoload methods go after =cut, and are processed by the autosplit program.
 
 1;
-__END__
-# Below is stub documentation for your module. You'd better edit it!
 
 =head1 NAME
 
-LibUSB - Perl extension for blah blah blah
+LibUSB - Raw XS bindings to the libusb-1.0 API.
 
 =head1 SYNOPSIS
 
   use LibUSB;
-  blah blah blah
 
 =head1 DESCRIPTION
 
-Stub documentation for LibUSB, created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
 
-Blah blah blah.
+=head1 METHODS/FUNCTIONS
 
-=head2 EXPORT
+=head2 Library initialization/deinitialization
 
-None by default.
+Implementation status: complete.
+
+=head3 set_debug
+
+ $ctx->set_debug(LIBUSB_LOG_LEVEL_DEBUG);
+
+=head3 init
+
+ my ($rv, $ctx) = LibUSB->init();
+
+=head3 exit
+
+ $ctx->exit();
+
+=head2 Device handling and enumeration
+
+Implementation status: complete.
+
+=head3 get_device_list
+
+ my ($ctx, @device_list) = $ctx->get_device_list();
+
+=head3 get_bus_number
+
+ my $bus_number = $dev->get_bus_number();
+
+=head3 get_port_number
+
+ my $port_number = $dev->get_port_number();
+
+=head3 get_port_numbers
+
+ my ($rv, @port_numbers) = $dev->get_port_numbers();
+
+=head3 get_parent
+
+ my $parent_dev = $dev->get_parent();
+
+=head3 get_device_address
+
+ my $address = $dev->get_device_address();
+
+=head3 get_device_speed
+
+ my $speed = $dev->get_device_speed();
+
+=head3 get_max_packet_size
+
+ my $size = $dev->get_max_packet_size($endpoint);
+
+=head3 get_max_iso_packet_size
+
+ my $size = $dev->get_max_iso_packet_size($endpoint);
+
+=head3 ref_device
+
+ $dev->ref_device();
+
+=head3 unref_device
+
+ $dev->unref_device();
+
+=head3 open
+
+ my ($rv, $handle) = $dev->open();
+
+Return a LibUSB::Device::Handle object in C<$handle> if C<$rv> is 0.
+
+=head3 open_device_with_vid_pid
+
+ my $handle = $ctx->open_device_with_vid_pid(0x1111, 0x2222);
+
+Return undef on error.
+
+=head3 close
+
+ $handle->close();
+
+=head3 get_device
+
+ my $dev = $hanlde->get_device();
+
+=head3 get_configuration
+
+ my $config = $handle->get_configuration();
+
+=head3 set_configuration
+
+ my $rv = $handle->set_configuration($config);
+
+=head3 claim_interface
+
+ my $rv = $handle->claim_interface($interface_number);
+
+=head3 release_interface
+
+ my $rv = $handle->release_interface($interface_number);
+
+=head3 set_interface_alt_setting
+
+ my $rv = $handle->set_interface_alt_setting($interface_number, $alternate_setting);
 
 
-=head1 SEE ALSO
+=head3 clear_halt
 
-Mention other useful documentation such as the documentation of
-related modules or operating system documentation (such as man pages
-in UNIX), or any relevant external documentation such as RFCs or
-standards.
+ my $rv = $handle->clear_halt($endpoint);
 
-If you have a mailing list set up for your module, mention it here.
+=head3 reset_device
 
-If you have a web site set up for your module, mention it here.
+ my $rv = $handle->reset_device();
+
+=head3 kernel_driver_active
+
+ my $is_active = $handle->kernelt_driver_active($interface_number);
+
+=head3 detach_kernel_driver
+
+ my $rv = $handle->detach_kernel_driver($interface_number);
+
+=head3 attach_kernel_driver
+
+ my $rv = $handle->attach_kernel_driver($interface_number);
+
+=head3 set_auto_detach_kernel_driver
+
+ my $rv = $handle->set_auto_detach_kernel_driver($enable);
+
+
+=head2 Miscellaneous
+
+Implementation status: complete.
+
+=head3 libusb_has_capability
+
+ my $has_cap = libusb_has_capability($capability);
+
+=head3 libusb_error_name
+
+ my $error_name = libusb_error_name($error_code);
+
+=head3 libusb_get_version
+
+ my $version_hash = libusb_get_version();
+ my $major = $version_hash->{major};
+
+=head3 libusb_setlocale
+
+ my $rv = libusb_setlocale($locale);
+
+=head3 libusb_strerror
+
+ my $strerror = libusb_strerror($error_code);
+
+=head2 USB descriptors
+
+Implementation status: The following descriptor types are not yet implemented.
+
+=over
+
+=item * SuperSpeed endpoint companion descriptor
+
+=item * Binary Object Store (BOS) descriptor
+
+=item * USB 2.0 Extension descriptor
+
+=item * SuperSpeed USB Device Capability descriptor
+
+=item * Container ID descriptor
+
+=back
+
+All descriptors are returned as hash references.
+
+=head3 get_device_descriptor
+
+ my ($rv, $desc) = $dev->get_device_descriptor();
+ my $iSerialNumber = $desc->{iSerialNumber};
+
+=head3 get_active_config_descriptor
+
+ my ($rv, $config) = $dev->get_active_config_descriptor();
+ my $iConfiguration = $config->{iConfiguration};
+
+=head3 get_config_descriptor
+
+ my ($rv, $config) = $dev->get_config_descriptor($config_index);
+
+=head3 get_config_descriptor_by_value
+
+ my ($rv, $config) = $dev->get_config_descriptor_by_value($bConfigurationValue);
+
+=head3 get_string_descriptor_ascii
+
+ my ($rv, $data) = $handle->get_string_descriptor_ascii($desc_index, $length);
+
+=head3 get_descriptor
+
+ my ($rv, $data) = $handle->get_descriptor($desc_type, $desc_index, $length);
+
+=head3 get_string_descriptor
+
+ my ($rv, $data) = $handle->get_string_descriptor($desc_index, $langid, $length);
+
+ 
+=head2 Device hotplug event notification
+
+Implementation status: To be implemented.
+
+=head2 Asynchronous device I/O
+
+Implementation status: To be implemented.
+
+=head2 Polling and timing
+
+Implementation status: To be implemented.
+
+=head2 Synchronous device I/O
+
+Implementation status: complete.
+
+=head3 control_transfer_write
+
+ my $rv = $handle->control_transfer_write($bmRequestType, $bRequest, $wValue, $wIndex, $data, $timeout);
+
+=head3 control_transfer_read
+
+ my ($rv, $data) = $handle->control_transfer_read($bmRequestType, $bRequest, $wValue, $wIndex, $length, $timeout);
+ 
+=head3 bulk_tranfer_write
+
+ my $rv = $handle->bulk_transfer_write($endpoint, $data, $timeout);
+ 
+=head3 bulk_transfer_read
+
+ my ($rv, $data) = $handle->bulk_transfer_read($endpoint, $length, $timeout);
+ 
+=head3 interrupt_transfer_write
+
+ my $rv = $handle->interrupt_transfer_write($endpoint, $data, $timeout);
+
+=head3 interrupt_transfer_read
+
+ my ($rv, $data) = $handle->interrupt_transfer_read($endpoint, $length, $timeout);
 
 =head1 AUTHOR
 
-Simon Reinhardt, E<lt>simon@(none)E<gt>
+Simon Reinhardt, E<lt>simon.reinhardt@stud.uni-regensburg.deE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
