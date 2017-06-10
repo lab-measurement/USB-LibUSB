@@ -186,16 +186,48 @@ XSLoader::load('LibUSB', $VERSION);
 
 =head1 NAME
 
-LibUSB - Raw XS bindings to the libusb-1.0 API.
+LibUSB - Raw XS bindings to the L<libusb-1.0|http://libusb.info/> API.
 
 =head1 SYNOPSIS
 
+  # import all the constants and non-method subroutines
   use LibUSB;
+
+  my ($rv, $ctx) = LibUSB->init();
+  $ctx->set_debug(LIBUSB_LOG_LEVEL_WARNING);
+ 
+  my ($vendor_id, $product_id) = (0x1234, 0x5678);
+  my $handle = $ctx->open_device_with_vid_pid($vendor_id, $product_id);
+
+  $rv = $handle->set_auto_detach_kernel_driver(1);
+  $rv = $handle->claim_interface($interface);
+
+  $rv = $handle->bulk_transfer_write($endpoint, "some data", $timeout);
+
+  ($rv, my $data) = $handle->bulk_transfer_read($endpoint, $length, $timeout);
 
 =head1 DESCRIPTION
 
+The recommanded user API is contained in the L<LibUSB::Moo> module.
+LibUSB provides the raw XS access to the libusb-1.0 API, which can then be used
+by modules like L<LibUSB::Moo> to create a more user friendly interface.
+
+=head1 INSTALLATION
+
+This requires libusb and pkg-config installed.
+
+E.g. on Debian-like Linux you need to run
+
+ $ apt-get install libusb-1.0-0-dev pkg-config
+
+The rest of the installation can be done by a cpan client like cpanm:
+
+ $ cpanm LibUSB
 
 =head1 METHODS/FUNCTIONS
+
+The following API is documented in the excellent
+L<libusb documentation|http://libusb.sourceforge.net/api-1.0/>.
 
 =head2 Library initialization/deinitialization
 
@@ -418,6 +450,8 @@ Implementation status: To be implemented.
 =head2 Synchronous device I/O
 
 Implementation status: complete.
+
+Timeouts are given in milliseconds.
 
 =head3 control_transfer_write
 
