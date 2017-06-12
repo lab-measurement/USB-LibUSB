@@ -183,6 +183,7 @@ XSLoader::load('LibUSB', $VERSION);
 # Autoload methods go after =cut, and are processed by the autosplit program.
 
 1;
+__END__
 
 =head1 NAME
 

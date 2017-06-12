@@ -259,9 +259,6 @@ PPCODE:
     if (rv == 0)
         mXPUSHs(pointer_object("LibUSB::Device::Handle", handle));
     
-void
-libusb_close(LibUSB::Device::Handle handle)
-
 
 
 void
@@ -305,6 +302,10 @@ CODE:
 
 
 MODULE = LibUSB      PACKAGE = LibUSB::Device::Handle       PREFIX = libusb_
+
+void
+libusb_close(LibUSB::Device::Handle handle)
+
 
 LibUSB::Device
 libusb_get_device(LibUSB::Device::Handle dev_handle)
