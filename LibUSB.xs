@@ -168,7 +168,7 @@ PPCODE:
     int rv = libusb_init(&ctx);
     mXPUSHi(rv);
     if (rv == 0)
-        mXPUSHs(pointer_object(class, ctx));
+        mXPUSHs(pointer_object(aTHX_ class, ctx));
 
 
 
@@ -257,7 +257,7 @@ PPCODE:
     int rv = libusb_open(dev, &handle);
     mXPUSHi(rv);
     if (rv == 0)
-        mXPUSHs(pointer_object("LibUSB::Device::Handle", handle));
+        mXPUSHs(pointer_object(aTHX_ "LibUSB::Device::Handle", handle));
     
 
 

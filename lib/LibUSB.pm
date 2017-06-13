@@ -217,10 +217,15 @@ by modules like L<LibUSB::Moo> to create a more user friendly interface.
 
 This requires libusb and pkg-config installed.
 
-E.g. on Debian-like Linux you need to run
+On Debian-like B<Linux> you need to run
 
  $ apt-get install libusb-1.0-0-dev pkg-config
 
+On B<Windows>, the only tested build so far is with
+L<Cygwin|https://www.cygwin.com/>. You need the pkg-config, libusb1.0-devel and
+libcrypt-devel packages.
+
+               
 The rest of the installation can be done by a cpan client like cpanm:
 
  $ cpanm LibUSB

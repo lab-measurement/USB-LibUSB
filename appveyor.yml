@@ -1,0 +1,14 @@
+environment:
+  matrix:
+    - cygwin: c:\cygwin64\bin\sh -lc
+    - cygwin: c:\cygwin\bin\sh -lc
+
+install:
+  - |
+     %cygwin% "wget rawgit.com/transcode-open/apt-cyg/master/apt-cyg -O /usr/bin/apt-cyg && chmod u+x /usr/bin/apt-cyg"
+     %cygwin% "apt-cyg install libcrypt-devel libusb1.0-devel"
+build_script:
+  - |
+     %cygwin% "cd $APPVEYOR_BUILD_FOLDER && perl Makefile.PL"
+     %cygwin% "cd $APPVEYOR_BUILD_FOLDER && make"
+     %cygwin% "cd $APPVEYOR_BUILD_FOLDER && prove -bv t"
