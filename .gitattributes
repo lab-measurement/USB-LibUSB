@@ -1,2 +1,2 @@
-*.h linguist-language=Perl
-*.xs linguist-language=Perl
+*.h linguist-language=C
+*.xs linguist-language=C
