@@ -160,7 +160,7 @@ if  (eval {require ExtUtils::Constant; 1}) {
               {name=>"LIBUSB_TRANSFER_TYPE_INTERRUPT", macro=>"1"},
               {name=>"LIBUSB_TRANSFER_TYPE_ISOCHRONOUS", macro=>"1"});
   ExtUtils::Constant::WriteConstants(
-                                     NAME         => 'LibUSB',
+                                     NAME         => 'LibUSB::XS',
                                      NAMES        => \@names,
                                      DEFAULT_TYPE => 'IV',
                                      C_FILE       => 'const-c.inc',

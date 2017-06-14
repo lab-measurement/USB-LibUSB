@@ -9,9 +9,9 @@
 
 #include "const-c.inc"
 
-typedef libusb_context *LibUSB;
-typedef libusb_device *LibUSB__Device;
-typedef libusb_device_handle *LibUSB__Device__Handle;
+typedef libusb_context *LibUSB__XS;
+typedef libusb_device *LibUSB__XS__Device;
+typedef libusb_device_handle *LibUSB__XS__Device__Handle;
 
 static void
 do_not_warn_unused(void *x __attribute__((__unused__)))
@@ -129,7 +129,7 @@ pointer_object(pTHX_ const char *class_name, void *pv)
     return rv;
 }
 
-MODULE = LibUSB      PACKAGE = LibUSB
+MODULE = LibUSB::XS      PACKAGE = LibUSB::XS
 
 int
 libusb_has_capability(unsigned capability)
@@ -154,12 +154,12 @@ const char *
 libusb_strerror(int error_code)
 
 
-MODULE = LibUSB		PACKAGE = LibUSB	 PREFIX = libusb_	
+MODULE = LibUSB::XS		PACKAGE = LibUSB::XS     PREFIX = libusb_	
 
 INCLUDE: const-xs.inc
 
 void
-libusb_set_debug(LibUSB ctx, int level)
+libusb_set_debug(LibUSB::XS ctx, int level)
 
 void
 libusb_init(char *class)
@@ -173,10 +173,10 @@ PPCODE:
 
 
 void
-libusb_exit(LibUSB ctx)
+libusb_exit(LibUSB::XS ctx)
 
 void
-libusb_get_device_list(LibUSB ctx)
+libusb_get_device_list(LibUSB::XS ctx)
 PPCODE:
     libusb_device **list;
     ssize_t num = libusb_get_device_list(ctx, &list);
@@ -184,33 +184,33 @@ PPCODE:
     ssize_t i;
     for (i = 0; i < num; ++i) {
         SV *tmp = newSV(0);
-        sv_setref_pv(tmp, "LibUSB::Device", (void *) list[i]);
+        sv_setref_pv(tmp, "LibUSB::XS::Device", (void *) list[i]);
         mXPUSHs(tmp);
     }
     if (num >= 0)
         libusb_free_device_list(list, 0);
 
-LibUSB::Device::Handle
-libusb_open_device_with_vid_pid(LibUSB ctx, unsigned vendor_id, unsigned product_id)
+LibUSB::XS::Device::Handle
+libusb_open_device_with_vid_pid(LibUSB::XS ctx, unsigned vendor_id, unsigned product_id)
 
 
 void
-DESTROY(LibUSB ctx)
+DESTROY(LibUSB::XS ctx)
 CODE:
     do_not_warn_unused(ctx);
 
 
 
-MODULE = LibUSB      PACKAGE = LibUSB::Device       PREFIX = libusb_
+MODULE = LibUSB::XS      PACKAGE = LibUSB::XS::Device       PREFIX = libusb_
 
 unsigned
-libusb_get_bus_number(LibUSB::Device dev)
+libusb_get_bus_number(LibUSB::XS::Device dev)
 
 unsigned
-libusb_get_port_number(LibUSB::Device dev)
+libusb_get_port_number(LibUSB::XS::Device dev)
 
 void
-libusb_get_port_numbers(LibUSB::Device dev)
+libusb_get_port_numbers(LibUSB::XS::Device dev)
 PPCODE:
     int len = 20;
     uint8_t port_numbers[len];
@@ -223,46 +223,46 @@ PPCODE:
 
 # libusb_get_port_path is deprecated => do not implement
 
-LibUSB::Device
-libusb_get_parent(LibUSB::Device dev)
+LibUSB::XS::Device
+libusb_get_parent(LibUSB::XS::Device dev)
 
 
 unsigned
-libusb_get_device_address(LibUSB::Device dev)
+libusb_get_device_address(LibUSB::XS::Device dev)
 
 
 int
-libusb_get_device_speed(LibUSB::Device dev)
+libusb_get_device_speed(LibUSB::XS::Device dev)
 
 
 int
-libusb_get_max_packet_size(LibUSB::Device dev, unsigned char endpoint)
+libusb_get_max_packet_size(LibUSB::XS::Device dev, unsigned char endpoint)
 
 
 int
-libusb_get_max_iso_packet_size(LibUSB::Device dev, unsigned char endpoint)
+libusb_get_max_iso_packet_size(LibUSB::XS::Device dev, unsigned char endpoint)
 
 
-LibUSB::Device
-libusb_ref_device(LibUSB::Device dev)
+LibUSB::XS::Device
+libusb_ref_device(LibUSB::XS::Device dev)
 
 
 void
-libusb_unref_device(LibUSB::Device dev)
+libusb_unref_device(LibUSB::XS::Device dev)
 
 void
-libusb_open(LibUSB::Device dev)
+libusb_open(LibUSB::XS::Device dev)
 PPCODE:
     libusb_device_handle *handle;
     int rv = libusb_open(dev, &handle);
     mXPUSHi(rv);
     if (rv == 0)
-        mXPUSHs(pointer_object(aTHX_ "LibUSB::Device::Handle", handle));
+        mXPUSHs(pointer_object(aTHX_ "LibUSB::XS::Device::Handle", handle));
     
 
 
 void
-libusb_get_device_descriptor(LibUSB::Device dev)
+libusb_get_device_descriptor(LibUSB::XS::Device dev)
 PPCODE:
     struct libusb_device_descriptor desc;
     int rv = libusb_get_device_descriptor(dev, &desc);
@@ -272,7 +272,7 @@ PPCODE:
 
     
 void
-libusb_get_active_config_descriptor(LibUSB::Device dev)
+libusb_get_active_config_descriptor(LibUSB::XS::Device dev)
 PPCODE:
     struct libusb_config_descriptor *config;
     int rv = libusb_get_active_config_descriptor(dev, &config);
@@ -282,7 +282,7 @@ PPCODE:
 
     
 void
-libusb_get_config_descriptor(LibUSB::Device dev, unsigned config_index)
+libusb_get_config_descriptor(LibUSB::XS::Device dev, unsigned config_index)
 PPCODE:
     struct libusb_config_descriptor *config;
     int rv = libusb_get_config_descriptor(dev, config_index, &config);
@@ -294,24 +294,24 @@ PPCODE:
 
     
 void
-DESTROY(LibUSB::Device dev)
+DESTROY(LibUSB::XS::Device dev)
 CODE:
     do_not_warn_unused(dev);
 
 
 
 
-MODULE = LibUSB      PACKAGE = LibUSB::Device::Handle       PREFIX = libusb_
+MODULE = LibUSB      PACKAGE = LibUSB::XS::Device::Handle       PREFIX = libusb_
 
 void
-libusb_close(LibUSB::Device::Handle handle)
+libusb_close(LibUSB::XS::Device::Handle handle)
 
 
-LibUSB::Device
-libusb_get_device(LibUSB::Device::Handle dev_handle)
+LibUSB::XS::Device
+libusb_get_device(LibUSB::XS::Device::Handle dev_handle)
 
 void
-libusb_get_configuration(LibUSB::Device::Handle dev)
+libusb_get_configuration(LibUSB::XS::Device::Handle dev)
 PPCODE:
     int config;
     int rv = libusb_get_configuration(dev, &config);
@@ -320,37 +320,37 @@ PPCODE:
         mXPUSHi(config);
 
 int
-libusb_set_configuration(LibUSB::Device::Handle dev, int configuration)
+libusb_set_configuration(LibUSB::XS::Device::Handle dev, int configuration)
 
 int
-libusb_claim_interface(LibUSB::Device::Handle dev, int interface_number)
+libusb_claim_interface(LibUSB::XS::Device::Handle dev, int interface_number)
 
 int
-libusb_release_interface(LibUSB::Device::Handle dev, int interface_number)
+libusb_release_interface(LibUSB::XS::Device::Handle dev, int interface_number)
 
 int
-libusb_set_interface_alt_setting(LibUSB::Device::Handle dev, int interface_number, int alternate_setting)
+libusb_set_interface_alt_setting(LibUSB::XS::Device::Handle dev, int interface_number, int alternate_setting)
 
 int
-libusb_clear_halt(LibUSB::Device::Handle dev, unsigned endpoint)
+libusb_clear_halt(LibUSB::XS::Device::Handle dev, unsigned endpoint)
 
 int
-libusb_reset_device(LibUSB::Device::Handle dev)
+libusb_reset_device(LibUSB::XS::Device::Handle dev)
 
 int
-libusb_kernel_driver_active(LibUSB::Device::Handle dev, int interface_number)
+libusb_kernel_driver_active(LibUSB::XS::Device::Handle dev, int interface_number)
 
 int
-libusb_detach_kernel_driver(LibUSB::Device::Handle dev, int interface_number)
+libusb_detach_kernel_driver(LibUSB::XS::Device::Handle dev, int interface_number)
 
 int
-libusb_attach_kernel_driver(LibUSB::Device::Handle dev, int interface_number)
+libusb_attach_kernel_driver(LibUSB::XS::Device::Handle dev, int interface_number)
 
 int
-libusb_set_auto_detach_kernel_driver(LibUSB::Device::Handle dev, int enable)
+libusb_set_auto_detach_kernel_driver(LibUSB::XS::Device::Handle dev, int enable)
 
 void
-libusb_get_string_descriptor_ascii(LibUSB::Device::Handle dev, unsigned desc_index, int length)
+libusb_get_string_descriptor_ascii(LibUSB::XS::Device::Handle dev, unsigned desc_index, int length)
 PPCODE:
     char *buffer;
     Newx(buffer, length, char);
@@ -362,7 +362,7 @@ PPCODE:
 
 
 void
-libusb_get_descriptor(LibUSB::Device::Handle dev, unsigned desc_type, unsigned desc_index, int length)
+libusb_get_descriptor(LibUSB::XS::Device::Handle dev, unsigned desc_type, unsigned desc_index, int length)
 PPCODE:
     char *buffer;
     Newx(buffer, length, char);
@@ -374,7 +374,7 @@ PPCODE:
 
 
 void
-libusb_get_string_descriptor(LibUSB::Device::Handle dev, unsigned desc_index, unsigned langid, int length)
+libusb_get_string_descriptor(LibUSB::XS::Device::Handle dev, unsigned desc_index, unsigned langid, int length)
 PPCODE:
     char *buffer;
     Newx(buffer, length, char);
@@ -392,13 +392,13 @@ PPCODE:
 ############################
 
 void
-DESTROY(LibUSB::Device::Handle handle)
+DESTROY(LibUSB::XS::Device::Handle handle)
 CODE:
     do_not_warn_unused(handle);
 
 
 void
-libusb_control_transfer_write(LibUSB::Device::Handle handle, unsigned bmRequestType, unsigned bRequest, unsigned wValue, unsigned wIndex, SV *data, unsigned timeout)
+libusb_control_transfer_write(LibUSB::XS::Device::Handle handle, unsigned bmRequestType, unsigned bRequest, unsigned wValue, unsigned wIndex, SV *data, unsigned timeout)
 PPCODE:
     char *bytes;
     STRLEN len;
@@ -408,7 +408,7 @@ PPCODE:
     mXPUSHi(libusb_control_transfer(handle, bmRequestType, bRequest, wValue, wIndex, (unsigned char *) bytes, len, timeout));
 
 void
-libusb_control_transfer_read(LibUSB::Device::Handle handle, unsigned bmRequestType, unsigned bRequest, unsigned wValue, unsigned wIndex, unsigned length, unsigned timeout)
+libusb_control_transfer_read(LibUSB::XS::Device::Handle handle, unsigned bmRequestType, unsigned bRequest, unsigned wValue, unsigned wIndex, unsigned length, unsigned timeout)
 PPCODE:
     char *data;
     Newx(data, length, char);
@@ -420,7 +420,7 @@ PPCODE:
 
 # Check whether endpoint is host-to-device in high-level code
 void
-libusb_bulk_transfer_write(LibUSB::Device::Handle handle, unsigned endpoint, SV *data, unsigned timeout)
+libusb_bulk_transfer_write(LibUSB::XS::Device::Handle handle, unsigned endpoint, SV *data, unsigned timeout)
 PPCODE:
     STRLEN len;
     char *bytes = SvPV(data, len);
@@ -432,7 +432,7 @@ PPCODE:
 
 # Check whether endpoint is device-to-host in high-level code
 void
-libusb_bulk_transfer_read(LibUSB::Device::Handle handle, unsigned endpoint, int length, unsigned timeout)
+libusb_bulk_transfer_read(LibUSB::XS::Device::Handle handle, unsigned endpoint, int length, unsigned timeout)
 PPCODE:
     char *data;
     Newx(data, length, char);
@@ -445,7 +445,7 @@ PPCODE:
 
 # Check whether endpoint is host-to-device in high-level code
 void
-libusb_interrupt_transfer_write(LibUSB::Device::Handle handle, unsigned endpoint, SV *data, unsigned timeout)
+libusb_interrupt_transfer_write(LibUSB::XS::Device::Handle handle, unsigned endpoint, SV *data, unsigned timeout)
 PPCODE:
     STRLEN len;
     char *bytes = SvPV(data, len);
@@ -457,7 +457,7 @@ PPCODE:
 
 # Check whether endpoint is device-to-host in high-level code
 void
-libusb_interrupt_transfer_read(LibUSB::Device::Handle handle, unsigned endpoint, int length, unsigned timeout)
+libusb_interrupt_transfer_read(LibUSB::XS::Device::Handle handle, unsigned endpoint, int length, unsigned timeout)
 PPCODE:
     char *data;
     Newx(data, length, char);

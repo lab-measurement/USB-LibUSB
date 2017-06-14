@@ -1,31 +1,22 @@
 #!/usr/bin/env perl
-use 5.010;
 use warnings;
 use strict;
+use 5.010;
 
 use blib;
 use LibUSB;
-use Data::Dumper;
 
-my $rv;
-my $ctx;
-my @dev_list;
+my $ctx = LibUSB->init();
+my @devices = $ctx->get_device_list();
 
-sub handle_error {
-    my ($rv, $msg) = @_;
-    return if $rv >= 0;
-    die "in $msg: rv: $rv, error_name: ", libusb_error_name($rv),", error string: ", libusb_strerror($rv);
+for my $dev (@devices) {
+    my $bus_number = $dev->get_bus_number();
+    my $device_address = $dev->get_device_address();
+    my $desc = $dev->get_device_descriptor();
+    my $idVendor = $desc->{idVendor};
+    my $idProduct = $desc->{idProduct};
+    
+    printf("Bus %03d Device %03d: ID %04x:%04x\n", $bus_number,
+           $device_address, $idVendor, $idProduct);
 }
-
-($rv, $ctx) = LibUSB->init();
-handle_error($rv, "init");
-
-($rv,  @dev_list) = $ctx->get_device_list();
-handle_error($rv, "get_device_list");
-
-say "number of devices on the USB: ", (@dev_list + 0);
-
-for my $dev (@dev_list) {
-    my ($rv, $desc) = $dev->get_device_descriptor();
-    print Dumper $desc;
-}
+    
