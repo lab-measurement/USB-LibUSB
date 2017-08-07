@@ -131,32 +131,16 @@ pointer_object(pTHX_ const char *class_name, void *pv)
 
 MODULE = LibUSB::XS      PACKAGE = LibUSB::XS
 
-int
-libusb_has_capability(unsigned capability)
-
-
-const char *
-libusb_error_name(int error_code)
-
-
-void
-libusb_get_version(void)
-PPCODE:
-    const struct libusb_version *version = libusb_get_version();
-    mXPUSHs(version_to_RV(aTHX_ version));
-
-
-int
-libusb_setlocale(const char *locale)
-
-
-const char *
-libusb_strerror(int error_code)
-
-
-MODULE = LibUSB::XS		PACKAGE = LibUSB::XS     PREFIX = libusb_	
-
 INCLUDE: const-xs.inc
+
+
+
+
+  
+######## Library initialization/deinitialization ##############################
+
+  
+MODULE = LibUSB::XS		PACKAGE = LibUSB::XS     PREFIX = libusb_
 
 void
 libusb_set_debug(LibUSB::XS ctx, int level)
@@ -170,11 +154,26 @@ PPCODE:
     if (rv == 0)
         mXPUSHs(pointer_object(aTHX_ class, ctx));
 
-
-
 void
 libusb_exit(LibUSB::XS ctx)
 
+void
+DESTROY(LibUSB::XS ctx)
+CODE:
+    do_not_warn_unused(ctx);
+
+
+
+
+
+
+
+
+######## Device handling and enumeration ######################################
+
+
+MODULE = LibUSB::XS		PACKAGE = LibUSB::XS     PREFIX = libusb_
+  
 void
 libusb_get_device_list(LibUSB::XS ctx)
 PPCODE:
@@ -190,18 +189,14 @@ PPCODE:
     if (num >= 0)
         libusb_free_device_list(list, 0);
 
-LibUSB::XS::Device::Handle
-libusb_open_device_with_vid_pid(LibUSB::XS ctx, unsigned vendor_id, unsigned product_id)
-
-
-void
-DESTROY(LibUSB::XS ctx)
-CODE:
-    do_not_warn_unused(ctx);
-
 
 
 MODULE = LibUSB::XS      PACKAGE = LibUSB::XS::Device       PREFIX = libusb_
+
+void
+DESTROY(LibUSB::XS::Device dev)
+CODE:
+    do_not_warn_unused(dev);
 
 unsigned
 libusb_get_bus_number(LibUSB::XS::Device dev)
@@ -258,54 +253,22 @@ PPCODE:
     mXPUSHi(rv);
     if (rv == 0)
         mXPUSHs(pointer_object(aTHX_ "LibUSB::XS::Device::Handle", handle));
-    
 
+MODULE = LibUSB      PACKAGE = LibUSB::XS     PREFIX = libusb_
+
+LibUSB::XS::Device::Handle
+libusb_open_device_with_vid_pid(LibUSB::XS ctx, unsigned vendor_id, unsigned product_id)
+
+MODULE = LibUSB      PACKAGE = LibUSB::XS::Device::Handle     PREFIX = libusb_
 
 void
-libusb_get_device_descriptor(LibUSB::XS::Device dev)
-PPCODE:
-    struct libusb_device_descriptor desc;
-    int rv = libusb_get_device_descriptor(dev, &desc);
-    mXPUSHi(rv);
-    // Function always succeeds since libusb 1.0.16
-    mXPUSHs(device_descriptor_to_RV(aTHX_ &desc));
-
-    
-void
-libusb_get_active_config_descriptor(LibUSB::XS::Device dev)
-PPCODE:
-    struct libusb_config_descriptor *config;
-    int rv = libusb_get_active_config_descriptor(dev, &config);
-    mXPUSHi(rv);
-    if (rv == 0)
-        mXPUSHs(config_descriptor_to_RV(aTHX_ config));
-
-    
-void
-libusb_get_config_descriptor(LibUSB::XS::Device dev, unsigned config_index)
-PPCODE:
-    struct libusb_config_descriptor *config;
-    int rv = libusb_get_config_descriptor(dev, config_index, &config);
-    mXPUSHi(rv);
-    if (rv == 0) {
-        mXPUSHs(config_descriptor_to_RV(aTHX_ config));
-        libusb_free_config_descriptor(config);
-    }
-
-    
-void
-DESTROY(LibUSB::XS::Device dev)
+DESTROY(LibUSB::XS::Device::Handle handle)
 CODE:
-    do_not_warn_unused(dev);
+    do_not_warn_unused(handle);
 
-
-
-
-MODULE = LibUSB      PACKAGE = LibUSB::XS::Device::Handle       PREFIX = libusb_
 
 void
 libusb_close(LibUSB::XS::Device::Handle handle)
-
 
 LibUSB::XS::Device
 libusb_get_device(LibUSB::XS::Device::Handle dev_handle)
@@ -349,6 +312,79 @@ libusb_attach_kernel_driver(LibUSB::XS::Device::Handle dev, int interface_number
 int
 libusb_set_auto_detach_kernel_driver(LibUSB::XS::Device::Handle dev, int enable)
 
+
+
+
+
+######## Miscellaneous ###########################################################
+
+
+MODULE = LibUSB::XS      PACKAGE = LibUSB::XS
+
+int
+libusb_has_capability(unsigned capability)
+
+
+const char *
+libusb_error_name(int error_code)
+
+
+void
+libusb_get_version(void)
+PPCODE:
+    const struct libusb_version *version = libusb_get_version();
+    mXPUSHs(version_to_RV(aTHX_ version));
+
+
+int
+libusb_setlocale(const char *locale)
+
+
+const char *
+libusb_strerror(int error_code)
+
+
+
+
+######## USB descriptors ###########################################################
+
+MODULE = LibUSB::XS      PACKAGE = LibUSB::XS::Device    PREFIX = libusb_
+
+void
+libusb_get_device_descriptor(LibUSB::XS::Device dev)
+PPCODE:
+    struct libusb_device_descriptor desc;
+    int rv = libusb_get_device_descriptor(dev, &desc);
+    mXPUSHi(rv);
+    // Function always succeeds since libusb 1.0.16
+    mXPUSHs(device_descriptor_to_RV(aTHX_ &desc));
+
+    
+void
+libusb_get_active_config_descriptor(LibUSB::XS::Device dev)
+PPCODE:
+    struct libusb_config_descriptor *config;
+    int rv = libusb_get_active_config_descriptor(dev, &config);
+    mXPUSHi(rv);
+    if (rv == 0)
+        mXPUSHs(config_descriptor_to_RV(aTHX_ config));
+
+    
+void
+libusb_get_config_descriptor(LibUSB::XS::Device dev, unsigned config_index)
+PPCODE:
+    struct libusb_config_descriptor *config;
+    int rv = libusb_get_config_descriptor(dev, config_index, &config);
+    mXPUSHi(rv);
+    if (rv == 0) {
+        mXPUSHs(config_descriptor_to_RV(aTHX_ config));
+        libusb_free_config_descriptor(config);
+    }
+
+    
+MODULE = LibUSB      PACKAGE = LibUSB::XS::Device::Handle       PREFIX = libusb_
+
+
 void
 libusb_get_string_descriptor_ascii(LibUSB::XS::Device::Handle dev, unsigned desc_index, int length)
 PPCODE:
@@ -385,17 +421,24 @@ PPCODE:
     Safefree(buffer);
 
 
-############################
-#
-# Synchronous device I/O
-#
-############################
+######## Device hotplug event notification #########################################
 
-void
-DESTROY(LibUSB::XS::Device::Handle handle)
-CODE:
-    do_not_warn_unused(handle);
+# TODO
 
+
+######## Asynchronous device I/O ###################################################
+
+# TODO
+
+
+######## Polling and timing ########################################################
+
+# TODO
+
+
+######## Synchronous device I/O ####################################################
+
+MODULE = LibUSB      PACKAGE = LibUSB::XS::Device::Handle       PREFIX = libusb_
 
 void
 libusb_control_transfer_write(LibUSB::XS::Device::Handle handle, unsigned bmRequestType, unsigned bRequest, unsigned wValue, unsigned wIndex, SV *data, unsigned timeout)
