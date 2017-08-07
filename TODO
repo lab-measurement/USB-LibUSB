@@ -1,5 +1,5 @@
-- order of desctruction (dev, handle, ...) ???
-- travis
-- Windows build + appveyor
-- function list in pod
-- use pkg-config for unix in Makefile.PL
+before PREPAN:
+- FIXMEs!
+
+
+   
