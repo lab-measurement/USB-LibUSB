@@ -190,11 +190,11 @@ __END__
 LibUSB::XS - Raw XS bindings to the L<libusb-1.0|http://libusb.info/> API.
 
 =head1 SYNOPSIS
-FIXME
-  # import all the constants and non-method subroutines
-  use LibUSB;
 
-  my ($rv, $ctx) = LibUSB->init();
+  # import all the constants and non-method subroutines
+  use LibUSB::XS;
+
+  my ($rv, $ctx) = LibUSB::XS->init();
   $ctx->set_debug(LIBUSB_LOG_LEVEL_WARNING);
  
   my ($vendor_id, $product_id) = (0x1234, 0x5678);
@@ -209,9 +209,8 @@ FIXME
 
 =head1 DESCRIPTION
 
-The recommanded user API is contained in the L<LibUSB::Moo> module.
-LibUSB provides the raw XS access to the libusb-1.0 API, which can then be used
-by modules like L<LibUSB::Moo> to create a more user friendly interface.
+LibUSB::XS provides the raw XS access to the libusb-1.0 API, which can then be used
+by modules like L<LibUSB>, which a more user frienly interface.
 
 
 =head1 METHODS/FUNCTIONS
@@ -229,7 +228,7 @@ Implementation status: complete.
 
 =head3 init
 
- my ($rv, $ctx) = LibUSB->init();
+ my ($rv, $ctx) = LibUSB::XS->init();
 
 =head3 exit
 
@@ -241,7 +240,9 @@ Implementation status: complete.
 
 =head3 get_device_list
 
- my ($ctx, @device_list) = $ctx->get_device_list();
+ my ($rv, @device_list) = $ctx->get_device_list();
+
+C<@device_list> contains LibUSB::XS::Device objects.
 
 =head3 get_bus_number
 
@@ -277,7 +278,7 @@ Implementation status: complete.
 
 =head3 ref_device
 
- $dev->ref_device();
+ $dev = $dev->ref_device();
 
 =head3 unref_device
 
@@ -287,7 +288,7 @@ Implementation status: complete.
 
  my ($rv, $handle) = $dev->open();
 
-Return a LibUSB::Device::Handle object in C<$handle> if C<$rv> is 0.
+Return a LibUSB::XS::Device::Handle object in C<$handle> if C<$rv> is 0.
 
 =head3 open_device_with_vid_pid
 
@@ -466,6 +467,14 @@ Timeouts are given in milliseconds.
 =head3 interrupt_transfer_read
 
  my ($rv, $data) = $handle->interrupt_transfer_read($endpoint, $length, $timeout);
+
+=head1 REPORTING BUGS
+
+Please report bugs at L<https://github.com/lab-measurement/LibUSB/issues>.
+
+=head1 CONTACT
+
+Feel free to contact us at the #labmeasurement channel on Freenode IRC.
 
 =head1 AUTHOR
 
