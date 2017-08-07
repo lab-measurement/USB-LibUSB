@@ -8,6 +8,11 @@ use LibUSB::Device;
 use LibUSB::Device::Handle;
 use Carp;
 
+
+# Export LibUSB::XS constants
+use Exporter 'import';
+our @EXPORT = @LibUSB::XS::EXPORT;
+
 our $VERSION = '0.01';
 
 has 'ctx' => (
