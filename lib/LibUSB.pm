@@ -197,23 +197,43 @@ LibUSB - Perl interface to the libusb-1.0 API.
 
  my $ctx = LibUSB->init();
  my $handle = $ctx->open_device_with_vid_pid(0x1111, 0x2222);
+ $handle->set_auto_detach_kernel_driver(1);
+
+ # We want to use interface 0
  $handle->claim_interface(0);
 
  $handle->bulk_transfer_write($endpoint, $data, $timeout);
- $handle->bulk_transfer_read($endpoint, $length, $timeout);
+ my $data = $handle->bulk_transfer_read($endpoint, $length, $timeout);
  
 
 =head1 DESCRIPTION
 
- FIXME:
- - what is libusb-1.0?
- - this package vs LibUSB::XS.
+This module provides a Perl interface to the libusb-1.0 API.
+It provides access to most basic libusb functionality including read-out of
+device descriptors and synchronous device I/O. 
+
+The design of the module is basically a two-tier system:
+
+=over
+
+=item L<LibUSB::XS>
+
+Raw XS interface, stay as close at possible to the libusb API. Not intended to
+be used directly.
+
+=item LibUSB
+
+Based on LibUSB::XS, adds convenient error handling and additional
+high-level functionality (e.g. device discovery with vid, pid and serial
+number). Easy to build more functionality without knowing about XS.
+
+=back
 
 =head1 INSTALLATION
 
 This requires libusb development files and pkg-config installed.
 
-On Debian-like B<Linux> you need to run
+On Debian like B<Linux> all you get these with
 
  $ apt-get install libusb-1.0-0-dev pkg-config
 
@@ -227,8 +247,6 @@ The rest of the installation can be done by a cpan client like cpanm:
 
  
 =head1 METHODS/FUNCTIONS
-
-FIXME: document all hash keys.
 
 =head2 Library initialization/deinitialization
 
@@ -249,6 +267,8 @@ FIXME: document all hash keys.
 =head3 get_device_list
 
  my @device_list = $ctx->get_device_list();
+
+Returned elements are LibUSB::Device objects.
 
 =head3 get_bus_number
 
@@ -370,8 +390,6 @@ Like C<open_device_with_vid_pid>, but also requires a serial number.
 
 =head2 Miscellaneous
 
-FIXME: export these
-
 =head3 libusb_has_capability
 
  my $has_cap = libusb_has_capability($capability);
@@ -383,7 +401,23 @@ FIXME: export these
 =head3 libusb_get_version
 
  my $version_hash = libusb_get_version();
- my $major = $version_hash->{major};
+
+Return hashref C<$version_hash> with the following keys:
+
+=over
+
+=item major
+
+=item minor
+
+=item micro
+
+=item nano
+
+=item rc
+
+=back
+
 
 =head3 libusb_setlocale
 
@@ -400,20 +434,140 @@ All descriptors are returned as hash references.
 =head3 get_device_descriptor
 
  my $desc = $dev->get_device_descriptor();
- my $iSerialNumber = $desc->{iSerialNumber};
+
+Return hashref C<$desc> with the following keys
+
+=over
+
+=item bLength
+
+=item bDescriptorType
+
+=item bcdUSB
+
+=item bDeviceClass
+
+=item bDeviceSubClass
+
+=item bDeviceProtocol
+
+=item bMaxPacketSize0
+
+=item idVendor
+
+=item idProduct
+
+=item bcdDevice
+
+=item iManufacturer
+
+=item iProduct
+
+=item iSerialNumber
+
+=item bNumConfigurations
+
+=back
+
+All keys hold a scalar value.
 
 =head3 get_active_config_descriptor
 
  my $config = $dev->get_active_config_descriptor();
- my $iConfiguration = $config->{iConfiguration};
+
+Return hashref C<$config> with the following keys:
+
+=over
+
+=item bLength
+
+=item bDescriptorType
+
+=item wTotalLength
+
+=item bNumInterfaces
+
+=item bConfigurationValue
+
+=item iConfiguration
+
+=item bmAttributes
+
+=item MaxPower
+
+=item interface
+
+=item extra
+
+=back
+
+With the exception of B<interface>, all values are scalars.
+B<interface> holds an arrayref of interface descriptors. These are hashrefs with the
+following keys:
+
+=over
+
+=item bLength
+
+=item bDescriptorType
+
+=item bInterfaceNumber
+
+=item bAlternateSetting
+
+=item bNumEndpoints
+
+=item bInterfaceClass
+
+=item bInterfaceProtocol
+
+=item iInterface
+
+=item endpoint
+
+=item extra
+
+=back
+
+With the exception of B<endpoint>, all values are scalars.
+B<endpoint> holds an arrayref of endpoint descriptors. These are hashrefs with the
+following keys:
+
+=over
+
+=item bLength
+
+=item bDescriptorType
+
+=item bEndpointAddress
+
+=item bmAttributes
+
+=item wMaxPacketSize
+
+=item bInterval
+
+=item bRefresh
+
+=item bSynchAddress
+
+=item extra
+
+=back
+
+All values are scalars.
 
 =head3 get_config_descriptor
 
  my $config = $dev->get_config_descriptor($config_index);
 
+Return config descriptor as hashref.
+
 =head3 get_config_descriptor_by_value
 
  my $config = $dev->get_config_descriptor_by_value($bConfigurationValue);
+
+Return config descriptor as hashref.
 
 =head3 get_string_descriptor_ascii
 
@@ -465,6 +619,14 @@ To be implemented.
 =head3 interrupt_transfer_read
 
  my $data = $handle->interrupt_transfer_read($endpoint, $length, $timeout);
+
+=head1 REPORTING BUGS
+
+Please report bugs at L<https://github.com/lab-measurement/LibUSB/issues>.
+
+=head1 CONTACT
+
+Feel free to contact us at the #labmeasurement channel on Freenode IRC.
 
 =head1 AUTHOR
 
