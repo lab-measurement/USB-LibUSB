@@ -54,6 +54,7 @@ interface_descriptor_to_HV(pTHX_ const struct libusb_interface_descriptor *inter
   hv_stores(rv, "bAlternateSetting", newSVuv(interface->bAlternateSetting));
   hv_stores(rv, "bNumEndpoints", newSVuv(interface->bNumEndpoints));
   hv_stores(rv, "bInterfaceClass", newSVuv(interface->bInterfaceClass));
+  hv_stores(rv, "bInterfaceSubClass", newSVuv(interface->bInterfaceSubClass));
   hv_stores(rv, "bInterfaceProtocol", newSVuv(interface->bInterfaceProtocol));
   hv_stores(rv, "iInterface", newSVuv(interface->iInterface));
   hv_stores(rv, "endpoint", endpoint_array_to_AV(aTHX_ interface->endpoint, interface->bNumEndpoints));

@@ -519,6 +519,8 @@ following keys:
 
 =item bInterfaceClass
 
+=item bInterfaceSubClass
+
 =item bInterfaceProtocol
 
 =item iInterface
