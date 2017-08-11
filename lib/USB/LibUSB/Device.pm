@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-package LibUSB::Device;
+package USB::LibUSB::Device;
 
 use Moo;
 use Carp;
@@ -41,7 +41,7 @@ sub get_port_numbers {
 sub get_parent {
     my $self = shift;
     my $parent = $self->device()->get_parent(@_);
-    return LibUSB::Device->new(ctx => $self->ctx(), device => $parent);
+    return USB::LibUSB::Device->new(ctx => $self->ctx(), device => $parent);
 }
 
 sub get_device_address {
@@ -84,7 +84,8 @@ sub open {
     my $self = shift;
     my ($rv, $handle) = $self->device()->open(@_);
     $self->_handle_error($rv, "open");
-    return LibUSB::Device::Handle->new(ctx => $self->ctx(), handle => $handle);
+    return USB::LibUSB::Device::Handle->new(
+        ctx => $self->ctx(), handle => $handle);
 }
 
 sub get_device_descriptor {

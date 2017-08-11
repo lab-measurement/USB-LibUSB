@@ -1,17 +1,17 @@
 use strict;
 use warnings;
-package LibUSB;
+package USB::LibUSB;
 
 use Moo;
-use LibUSB::XS;
-use LibUSB::Device;
-use LibUSB::Device::Handle;
+use USB::LibUSB::XS;
+use USB::LibUSB::Device;
+use USB::LibUSB::Device::Handle;
 use Carp;
 
 
-# Export LibUSB::XS constants
+# Export USB::LibUSB::XS constants
 use Exporter 'import';
-our @EXPORT = @LibUSB::XS::EXPORT;
+our @EXPORT = @USB::LibUSB::XS::EXPORT;
 
 our $VERSION = '0.01';
 
@@ -45,7 +45,7 @@ sub _handle_error {
 sub BUILD {
     my ($self, @args) = @_;
 
-    my ($rv, $ctx) = LibUSB::XS->init();
+    my ($rv, $ctx) = USB::LibUSB::XS->init();
     $self->_handle_error($rv, "init");
     $self->_ctx($ctx);
 }
@@ -59,7 +59,7 @@ sub set_debug {
     $self->ctx()->set_debug(@_);
 }
 
-# libusb_open_device_with_vid_pid: create LibUSB::Device::Handle objects
+# libusb_open_device_with_vid_pid: create USB::LibUSB::Device::Handle objects
 
 sub exit {
     my $self = shift;
@@ -71,7 +71,7 @@ sub get_device_list {
     my $ctx = $self->ctx();
     my ($rv, @dev_list) = $ctx->get_device_list();
     $self->_handle_error($rv, "get_device_list");
-    return map LibUSB::Device->new(ctx => $self, device => $_), @dev_list;
+    return map USB::LibUSB::Device->new(ctx => $self, device => $_), @dev_list;
 }
 
 sub open_device_with_vid_pid {
@@ -82,7 +82,7 @@ sub open_device_with_vid_pid {
         croak "Error in libusb_open_device_with_vid_pid.",
         " use libusb_open for detailed error message.";
     }
-    return LibUSB::Device::Handle->new(ctx => $self, handle => $handle);
+    return USB::LibUSB::Device::Handle->new(ctx => $self, handle => $handle);
 }
 
 sub open_device_with_vid_pid_unique {
@@ -167,17 +167,17 @@ sub open_device_with_vid_pid_serial {
 
 =head1 NAME
 
-LibUSB - Perl interface to the libusb-1.0 API.
+USB::LibUSB - Perl interface to the libusb-1.0 API.
 
 =head1 SYNOPSIS
 
- use LibUSB;
+ use USB::LibUSB;
 
  #
  # simple program to list all devices on the USB
  #
  
- my $ctx = LibUSB->init();
+ my $ctx = USB::LibUSB->init();
  my @devices = $ctx->get_device_list();
  
  for my $dev (@devices) {
@@ -195,7 +195,7 @@ LibUSB - Perl interface to the libusb-1.0 API.
  # Synchronous bulk transfers
  #
 
- my $ctx = LibUSB->init();
+ my $ctx = USB::LibUSB->init();
  my $handle = $ctx->open_device_with_vid_pid(0x1111, 0x2222);
  $handle->set_auto_detach_kernel_driver(1);
 
@@ -216,14 +216,14 @@ The design of the module is basically a two-tier system:
 
 =over
 
-=item L<LibUSB::XS>
+=item L<USB::LibUSB::XS>
 
 Raw XS interface, stay as close at possible to the libusb API. Not intended to
 be used directly.
 
-=item LibUSB
+=item USB::LibUSB
 
-Based on LibUSB::XS, adds convenient error handling and additional
+Based on USB::LibUSB::XS, adds convenient error handling and additional
 high-level functionality (e.g. device discovery with vid, pid and serial
 number). Easy to build more functionality without knowing about XS.
 
@@ -243,7 +243,7 @@ libcrypt-devel packages.
 
 The rest of the installation can be done by a cpan client like cpanm:
 
- $ cpanm LibUSB
+ $ cpanm USB::LibUSB
 
  
 =head1 METHODS/FUNCTIONS
@@ -256,7 +256,7 @@ The rest of the installation can be done by a cpan client like cpanm:
 
 =head3 init
 
- my $ctx = LibUSB->init();
+ my $ctx = USB::LibUSB->init();
 
 =head3 exit
 
@@ -268,7 +268,7 @@ The rest of the installation can be done by a cpan client like cpanm:
 
  my @device_list = $ctx->get_device_list();
 
-Returned elements are LibUSB::Device objects.
+Returned elements are USB::LibUSB::Device objects.
 
 =head3 get_bus_number
 
@@ -314,13 +314,13 @@ Returned elements are LibUSB::Device objects.
 
  my $handle = $dev->open();
 
-Return a LibUSB::Device::Handle object.
+Return a USB::LibUSB::Device::Handle object.
 
 =head3 open_device_with_vid_pid
 
  my $handle = $ctx->open_device_with_vid_pid(0x1111, 0x2222);
 
-Return a LibUSB::Device::Handle object. If the vid:pid combination is not
+Return a USB::LibUSB::Device::Handle object. If the vid:pid combination is not
 unique, return the first device which is found.
 
 =head3 open_device_with_vid_pid_unique
@@ -624,7 +624,7 @@ To be implemented.
 
 =head1 REPORTING BUGS
 
-Please report bugs at L<https://github.com/lab-measurement/LibUSB/issues>.
+Please report bugs at L<https://github.com/lab-measurement/USB-LibUSB/issues>.
 
 =head1 CONTACT
 

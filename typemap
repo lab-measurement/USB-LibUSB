@@ -1,6 +1,6 @@
-LibUSB::XS                       T_PTROBJ
-LibUSB::XS::Device               T_PTROBJ
-LibUSB::XS::Device::Handle       T_PTROBJ
+USB::LibUSB::XS                       T_PTROBJ
+USB::LibUSB::XS::Device               T_PTROBJ
+USB::LibUSB::XS::Device::Handle       T_PTROBJ
 HV *                         T_HVREF_REFCOUNT_FIXED
 AV *	                     T_AVREF_REFCOUNT_FIXED
 ##########################

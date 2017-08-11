@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-package LibUSB::Device::Handle;
+package USB::LibUSB::Device::Handle;
 
 use Moo;
 use Carp;
@@ -28,7 +28,7 @@ sub close {
 sub get_device {
     my $self = shift;
     my $device = $self->handle()->get_device(@_);
-    return LibUSB::Device->new(ctx => $self->ctx(), device => $device);
+    return USB::LibUSB::Device->new(ctx => $self->ctx(), device => $device);
 }
 
 sub get_configuration {

@@ -1,8 +1,0 @@
-Changes
-Makefile.PL
-MANIFEST
-ppport.h
-README
-t/LibUSB.t
-lib/LibUSB.pm
-LibUSB.xs

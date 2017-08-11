@@ -6,10 +6,10 @@ my $libs = `pkg-config --libs libusb-1.0`;
 my $inc = `pkg-config --cflags-only-I libusb-1.0`;
 
 WriteMakefile(
-    NAME              => 'LibUSB',
-    VERSION_FROM      => 'lib/LibUSB.pm', # finds $VERSION
+    NAME              => 'USB::LibUSB',
+    VERSION_FROM      => 'lib/USB/LibUSB.pm', # finds $VERSION
     PREREQ_PM         => {}, # e.g., Module::Name => 1.1
-    ABSTRACT_FROM     => 'lib/LibUSB.pm', # retrieve abstract from module
+    ABSTRACT_FROM     => 'lib/USB/LibUSB.pm', # retrieve abstract from module
     AUTHOR            =>
     'Simon Reinhardt <simon.reinhardt@stud.uni-regensburg.de>',
     LICENSE           => 'perl',
@@ -160,7 +160,7 @@ if  (eval {require ExtUtils::Constant; 1}) {
               {name=>"LIBUSB_TRANSFER_TYPE_INTERRUPT", macro=>"1"},
               {name=>"LIBUSB_TRANSFER_TYPE_ISOCHRONOUS", macro=>"1"});
   ExtUtils::Constant::WriteConstants(
-                                     NAME         => 'LibUSB::XS',
+                                     NAME         => 'USB::LibUSB::XS',
                                      NAMES        => \@names,
                                      DEFAULT_TYPE => 'IV',
                                      C_FILE       => 'const-c.inc',

@@ -10,3 +10,5 @@ const-*.inc
 /fallback/
 /pm_to_blib
 /LibUSB.bs
+/USB-LibUSB-*
+/MANIFEST

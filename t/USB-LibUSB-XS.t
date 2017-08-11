@@ -10,7 +10,7 @@ use strict;
 use warnings;
 
 use Test::More tests => 2;
-BEGIN { use_ok('LibUSB::XS') };
+BEGIN { use_ok('USB::LibUSB::XS') };
 
 
 my $fail = 0;
@@ -79,7 +79,7 @@ foreach my $constname (qw(
 	LIBUSB_TRANSFER_TYPE_ISOCHRONOUS LIBUSB_TRANSFER_TYPE_MASK
 	)) {
   next if (eval "my \$a = $constname; 1");
-  if ($@ =~ /^Your vendor has not defined LibUSB::XS macro $constname/) {
+  if ($@ =~ /^Your vendor has not defined USB::LibUSB::XS macro $constname/) {
     print "# pass: $@";
   } else {
     print "# fail: $@";

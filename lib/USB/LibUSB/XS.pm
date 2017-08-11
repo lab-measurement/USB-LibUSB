@@ -1,4 +1,4 @@
-package LibUSB::XS;
+package USB::LibUSB::XS;
 
 use strict;
 use warnings;
@@ -165,7 +165,7 @@ sub AUTOLOAD {
     my $constname;
     our $AUTOLOAD;
     ($constname = $AUTOLOAD) =~ s/.*:://;
-    croak "&LibUSB::constant not defined" if $constname eq 'constant';
+    croak "&USB::LibUSB::constant not defined" if $constname eq 'constant';
     my ($error, $val) = constant($constname);
     if ($error) { croak $error; }
     {
@@ -176,7 +176,7 @@ sub AUTOLOAD {
 }
 
 require XSLoader;
-XSLoader::load('LibUSB', $VERSION);
+XSLoader::load('USB::LibUSB', $VERSION);
 
 # Preloaded methods go here.
 
@@ -187,14 +187,14 @@ __END__
 
 =head1 NAME
 
-LibUSB::XS - Raw XS bindings to the L<libusb-1.0|http://libusb.info/> API.
+USB::LibUSB::XS - Raw XS bindings to the L<libusb-1.0|http://libusb.info/> API.
 
 =head1 SYNOPSIS
 
   # import all the constants and non-method subroutines
-  use LibUSB::XS;
+  use USB::LibUSB::XS;
 
-  my ($rv, $ctx) = LibUSB::XS->init();
+  my ($rv, $ctx) = USB::LibUSB::XS->init();
   $ctx->set_debug(LIBUSB_LOG_LEVEL_WARNING);
  
   my ($vendor_id, $product_id) = (0x1234, 0x5678);
@@ -209,8 +209,8 @@ LibUSB::XS - Raw XS bindings to the L<libusb-1.0|http://libusb.info/> API.
 
 =head1 DESCRIPTION
 
-LibUSB::XS provides the raw XS access to the libusb-1.0 API, which can then be used
-by modules like L<LibUSB>, which a more user frienly interface.
+USB::LibUSB::XS provides the raw XS access to the libusb-1.0 API, which can then be used
+by modules like L<USB::LibUSB>, which is a more user frienly interface.
 
 
 =head1 METHODS/FUNCTIONS
@@ -228,7 +228,7 @@ Implementation status: complete.
 
 =head3 init
 
- my ($rv, $ctx) = LibUSB::XS->init();
+ my ($rv, $ctx) = USB::LibUSB::XS->init();
 
 =head3 exit
 
@@ -242,7 +242,7 @@ Implementation status: complete.
 
  my ($rv, @device_list) = $ctx->get_device_list();
 
-C<@device_list> contains LibUSB::XS::Device objects.
+C<@device_list> contains USB::LibUSB::XS::Device objects.
 
 =head3 get_bus_number
 
@@ -288,7 +288,7 @@ C<@device_list> contains LibUSB::XS::Device objects.
 
  my ($rv, $handle) = $dev->open();
 
-Return a LibUSB::XS::Device::Handle object in C<$handle> if C<$rv> is 0.
+Return a USB::LibUSB::XS::Device::Handle object in C<$handle> if C<$rv> is 0.
 
 =head3 open_device_with_vid_pid
 
@@ -470,7 +470,7 @@ Timeouts are given in milliseconds.
 
 =head1 REPORTING BUGS
 
-Please report bugs at L<https://github.com/lab-measurement/LibUSB/issues>.
+Please report bugs at L<https://github.com/lab-measurement/USB-LibUSB/issues>.
 
 =head1 CONTACT
 

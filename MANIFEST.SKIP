@@ -1,0 +1,23 @@
+.o$
+^.git
+^fallback/
+
+# dist builds
+^USB-LibUSB
+
+# Makemaker generated files and dirs.
+^Makefile$
+^blib/
+^MakeMaker-\d
+.inc$
+^MANIFEST.bak$
+
+^MYMETA
+
+
+
+# Temp, old and emacs backup files.
+~$
+\.old$
+^#.*#$
+^\.#
