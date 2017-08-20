@@ -4,9 +4,9 @@ use strict;
 use 5.010;
 
 use blib;
-use LibUSB;
+use USB::LibUSB;
 
-my $ctx = LibUSB->init();
+my $ctx = USB::LibUSB->init();
 my @devices = $ctx->get_device_list();
 
 for my $dev (@devices) {

@@ -4,7 +4,7 @@ package USB::LibUSB::Device;
 
 use Moo;
 use Carp;
-
+    
 has 'ctx' => (
     is => 'ro',
     required => 1,
@@ -97,14 +97,16 @@ sub get_device_descriptor {
 
 sub get_active_config_descriptor {
     my $self = shift;
-    my ($rv, $desc) = $self->device()->get_active_config_descriptor(@_);
+    my ($rv, $desc) = $self->device()->get_active_config_descriptor(
+        $self->ctx()->ctx(), @_);
     $self->_handle_error($rv, "get_active_config_descriptor");
     return $desc;
 }
 
 sub get_config_descriptor {
     my $self = shift;
-    my ($rv, $desc) = $self->device()->get_config_descriptor(@_);
+    my ($rv, $desc) = $self->device()->get_config_descriptor(
+        $self->ctx()->ctx(), @_);
     $self->_handle_error($rv, "get_config_descriptor");
     return $desc;
 }

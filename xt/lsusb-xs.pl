@@ -4,7 +4,7 @@ use warnings;
 use strict;
 
 use blib;
-use LibUSB::XS;
+use USB::LibUSB::XS;
 use Data::Dumper;
 
 my $rv;
@@ -17,7 +17,7 @@ sub handle_error {
     die "in $msg: rv: $rv, error_name: ", libusb_error_name($rv),", error string: ", libusb_strerror($rv);
 }
 
-($rv, $ctx) = LibUSB::XS->init();
+($rv, $ctx) = USB::LibUSB::XS->init();
 handle_error($rv, "init");
 
 ($rv,  @dev_list) = $ctx->get_device_list();

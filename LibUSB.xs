@@ -19,7 +19,7 @@ do_not_warn_unused(void *x __attribute__((__unused__)))
 }
 
 static SV *
-endpoint_descriptor_to_HV(pTHX_ const struct libusb_endpoint_descriptor *endpoint)
+endpoint_descriptor_to_HV(pTHX_ libusb_context *ctx, const struct libusb_endpoint_descriptor *endpoint)
 {
   HV *rv = newHV();
   hv_stores(rv, "bLength", newSVuv(endpoint->bLength));
@@ -31,21 +31,23 @@ endpoint_descriptor_to_HV(pTHX_ const struct libusb_endpoint_descriptor *endpoin
   hv_stores(rv, "bRefresh", newSVuv(endpoint->bRefresh));
   hv_stores(rv, "bSynchAddress", newSVuv(endpoint->bSynchAddress));
   hv_stores(rv, "extra", newSVpvn((const char *)endpoint->extra, endpoint->extra_length));
+
+  //struct libusb_ss_endpoint_companion_descriptor *ep_comp;
   return newRV_noinc((SV *) rv);
 }
 
 static SV *
-endpoint_array_to_AV(pTHX_ const struct libusb_endpoint_descriptor *endpoint, int num_endpoints)
+endpoint_array_to_AV(pTHX_ libusb_context *ctx, const struct libusb_endpoint_descriptor *endpoint, int num_endpoints)
 {
   AV *rv = newAV();
   for (int i = 0; i < num_endpoints; ++i)
-      av_push(rv, endpoint_descriptor_to_HV(aTHX_ &endpoint[i]));
+      av_push(rv, endpoint_descriptor_to_HV(aTHX_ ctx, &endpoint[i]));
   return newRV_noinc((SV *) rv);
 }
 
 
 static SV *
-interface_descriptor_to_HV(pTHX_ const struct libusb_interface_descriptor *interface)
+interface_descriptor_to_HV(pTHX_ libusb_context *ctx, const struct libusb_interface_descriptor *interface)
 {
   HV *rv = newHV();
   hv_stores(rv, "bLength", newSVuv(interface->bLength));
@@ -57,22 +59,22 @@ interface_descriptor_to_HV(pTHX_ const struct libusb_interface_descriptor *inter
   hv_stores(rv, "bInterfaceSubClass", newSVuv(interface->bInterfaceSubClass));
   hv_stores(rv, "bInterfaceProtocol", newSVuv(interface->bInterfaceProtocol));
   hv_stores(rv, "iInterface", newSVuv(interface->iInterface));
-  hv_stores(rv, "endpoint", endpoint_array_to_AV(aTHX_ interface->endpoint, interface->bNumEndpoints));
+  hv_stores(rv, "endpoint", endpoint_array_to_AV(aTHX_ ctx, interface->endpoint, interface->bNumEndpoints));
   hv_stores(rv, "extra", newSVpvn((const char *) interface->extra, interface->extra_length));
   return newRV_noinc((SV *) rv);
 }
 
 static SV *
-interface_array_to_AV(pTHX_ const struct libusb_interface *interface)
+interface_array_to_AV(pTHX_ libusb_context *ctx, const struct libusb_interface *interface)
 {
   AV *rv = newAV();
   for (int i = 0; i < interface->num_altsetting; ++i)
-    av_push(rv, interface_descriptor_to_HV(aTHX_ &interface->altsetting[i]));
+    av_push(rv, interface_descriptor_to_HV(aTHX_ ctx, &interface->altsetting[i]));
   return newRV_noinc((SV *) rv);  
 }
 
 static SV *
-config_descriptor_to_RV(pTHX_ struct libusb_config_descriptor *config)
+config_descriptor_to_RV(pTHX_ libusb_context *ctx, struct libusb_config_descriptor *config)
 {
     HV *rv = newHV();
     hv_stores(rv, "bLength", newSVuv(config->bLength));
@@ -83,7 +85,7 @@ config_descriptor_to_RV(pTHX_ struct libusb_config_descriptor *config)
     hv_stores(rv, "iConfiguration", newSVuv(config->iConfiguration));
     hv_stores(rv, "bmAttributes", newSVuv(config->bmAttributes));
     hv_stores(rv, "MaxPower", newSVuv(config->MaxPower));
-    hv_stores(rv, "interface", interface_array_to_AV(aTHX_ config->interface));
+    hv_stores(rv, "interface", interface_array_to_AV(aTHX_ ctx, config->interface));
     hv_stores(rv, "extra", newSVpvn((const char *) config->extra, config->extra_length));
     return newRV_noinc((SV *) rv);
 }
@@ -274,6 +276,7 @@ libusb_close(USB::LibUSB::XS::Device::Handle handle)
 USB::LibUSB::XS::Device
 libusb_get_device(USB::LibUSB::XS::Device::Handle dev_handle)
 
+
 void
 libusb_get_configuration(USB::LibUSB::XS::Device::Handle dev)
 PPCODE:
@@ -360,25 +363,27 @@ PPCODE:
     // Function always succeeds since libusb 1.0.16
     mXPUSHs(device_descriptor_to_RV(aTHX_ &desc));
 
-    
+
+# Can't get ctx arg from libusb_device => Add as extra arg.
+
 void
-libusb_get_active_config_descriptor(USB::LibUSB::XS::Device dev)
+libusb_get_active_config_descriptor(USB::LibUSB::XS::Device dev, USB::LibUSB::XS ctx)
 PPCODE:
     struct libusb_config_descriptor *config;
     int rv = libusb_get_active_config_descriptor(dev, &config);
     mXPUSHi(rv);
     if (rv == 0)
-        mXPUSHs(config_descriptor_to_RV(aTHX_ config));
+        mXPUSHs(config_descriptor_to_RV(aTHX_ ctx, config));
 
     
 void
-libusb_get_config_descriptor(USB::LibUSB::XS::Device dev, unsigned config_index)
+libusb_get_config_descriptor(USB::LibUSB::XS::Device dev, USB::LibUSB::XS ctx, unsigned config_index)
 PPCODE:
     struct libusb_config_descriptor *config;
     int rv = libusb_get_config_descriptor(dev, config_index, &config);
     mXPUSHi(rv);
     if (rv == 0) {
-        mXPUSHs(config_descriptor_to_RV(aTHX_ config));
+        mXPUSHs(config_descriptor_to_RV(aTHX_ ctx, config));
         libusb_free_config_descriptor(config);
     }
 
