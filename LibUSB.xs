@@ -406,7 +406,20 @@ PPCODE:
         libusb_free_config_descriptor(config);
     }
 
-    
+
+void
+libusb_get_config_descriptor_by_value(USB::LibUSB::XS::Device dev, USB::LibUSB::XS ctx, unsigned bConfigurationValue)
+PPCODE:
+    struct libusb_config_descriptor *config;
+    int rv = libusb_get_config_descriptor_by_value(dev, bConfigurationValue, &config);
+    mXPUSHi(rv);
+    if (rv == 0) {
+        mXPUSHs(config_descriptor_to_RV(aTHX_ ctx, config));
+        libusb_free_config_descriptor(config);
+    }
+
+
+
 MODULE = USB::LibUSB      PACKAGE = USB::LibUSB::XS::Device::Handle       PREFIX = libusb_
 
 
