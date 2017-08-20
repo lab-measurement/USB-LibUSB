@@ -26,6 +26,8 @@ perl:
 install:
   - perl Makefile.PL
   - make
+  - cpanm Test::Pod
+
 script:
   - prove -bv t
 

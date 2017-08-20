@@ -11,4 +11,5 @@ build_script:
   - |
      %cygwin% "cd $APPVEYOR_BUILD_FOLDER && perl Makefile.PL"
      %cygwin% "cd $APPVEYOR_BUILD_FOLDER && make"
+     %cygwin% "cd $APPVEYOR_BUILD_FOLDER && cpanm Test::Pod"
      %cygwin% "cd $APPVEYOR_BUILD_FOLDER && prove -bv t"
