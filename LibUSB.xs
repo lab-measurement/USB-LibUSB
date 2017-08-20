@@ -19,58 +19,77 @@ do_not_warn_unused(void *x __attribute__((__unused__)))
 }
 
 static SV *
+ss_ep_comp_to_HV(pTHX_ struct libusb_ss_endpoint_companion_descriptor *ep_comp)
+{
+    HV *rv = newHV();
+    hv_stores(rv, "bLength", newSVuv(ep_comp->bLength));
+    hv_stores(rv, "bDescriptorType", newSVuv(ep_comp->bDescriptorType));
+    hv_stores(rv, "bMaxBurst", newSVuv(ep_comp->bMaxBurst));
+    hv_stores(rv, "bmAttributes", newSVuv(ep_comp->bmAttributes));
+    hv_stores(rv, "wBytesPerInterval", newSVuv(ep_comp->wBytesPerInterval));
+    return newRV_noinc((SV *) rv);
+}
+
+static SV *
 endpoint_descriptor_to_HV(pTHX_ libusb_context *ctx, const struct libusb_endpoint_descriptor *endpoint)
 {
-  HV *rv = newHV();
-  hv_stores(rv, "bLength", newSVuv(endpoint->bLength));
-  hv_stores(rv, "bDescriptorType", newSVuv(endpoint->bDescriptorType));
-  hv_stores(rv, "bEndpointAddress", newSVuv(endpoint->bEndpointAddress));
-  hv_stores(rv, "bmAttributes", newSVuv(endpoint->bmAttributes));
-  hv_stores(rv, "wMaxPacketSize", newSVuv(endpoint->wMaxPacketSize));
-  hv_stores(rv, "bInterval", newSVuv(endpoint->bInterval));
-  hv_stores(rv, "bRefresh", newSVuv(endpoint->bRefresh));
-  hv_stores(rv, "bSynchAddress", newSVuv(endpoint->bSynchAddress));
-  hv_stores(rv, "extra", newSVpvn((const char *)endpoint->extra, endpoint->extra_length));
-
-  //struct libusb_ss_endpoint_companion_descriptor *ep_comp;
-  return newRV_noinc((SV *) rv);
+    HV *rv = newHV();
+    hv_stores(rv, "bLength", newSVuv(endpoint->bLength));
+    hv_stores(rv, "bDescriptorType", newSVuv(endpoint->bDescriptorType));
+    hv_stores(rv, "bEndpointAddress", newSVuv(endpoint->bEndpointAddress));
+    hv_stores(rv, "bmAttributes", newSVuv(endpoint->bmAttributes));
+    hv_stores(rv, "wMaxPacketSize", newSVuv(endpoint->wMaxPacketSize));
+    hv_stores(rv, "bInterval", newSVuv(endpoint->bInterval));
+    hv_stores(rv, "bRefresh", newSVuv(endpoint->bRefresh));
+    hv_stores(rv, "bSynchAddress", newSVuv(endpoint->bSynchAddress));
+    hv_stores(rv, "extra", newSVpvn((const char *)endpoint->extra, endpoint->extra_length));
+  
+    struct libusb_ss_endpoint_companion_descriptor *ep_comp;
+    int value = libusb_get_ss_endpoint_companion_descriptor(ctx, endpoint, &ep_comp);
+    if (value == 0) {
+        hv_stores(rv, "ss_ep_comp", ss_ep_comp_to_HV(aTHX_ ep_comp));
+        libusb_free_ss_endpoint_companion_descriptor(ep_comp);
+    }
+    else if (value != LIBUSB_ERROR_NOT_FOUND)
+        croak("Error in libusb_get_ss_endpoint_companion_descriptor");
+    return newRV_noinc((SV *) rv);
 }
 
 static SV *
 endpoint_array_to_AV(pTHX_ libusb_context *ctx, const struct libusb_endpoint_descriptor *endpoint, int num_endpoints)
 {
-  AV *rv = newAV();
-  for (int i = 0; i < num_endpoints; ++i)
-      av_push(rv, endpoint_descriptor_to_HV(aTHX_ ctx, &endpoint[i]));
-  return newRV_noinc((SV *) rv);
+    AV *rv = newAV();
+    for (int i = 0; i < num_endpoints; ++i)
+        av_push(rv, endpoint_descriptor_to_HV(aTHX_ ctx, &endpoint[i]));
+    return newRV_noinc((SV *) rv);
 }
 
 
 static SV *
 interface_descriptor_to_HV(pTHX_ libusb_context *ctx, const struct libusb_interface_descriptor *interface)
 {
-  HV *rv = newHV();
-  hv_stores(rv, "bLength", newSVuv(interface->bLength));
-  hv_stores(rv, "bDescriptorType", newSVuv(interface->bDescriptorType));
-  hv_stores(rv, "bInterfaceNumber", newSVuv(interface->bInterfaceNumber));
-  hv_stores(rv, "bAlternateSetting", newSVuv(interface->bAlternateSetting));
-  hv_stores(rv, "bNumEndpoints", newSVuv(interface->bNumEndpoints));
-  hv_stores(rv, "bInterfaceClass", newSVuv(interface->bInterfaceClass));
-  hv_stores(rv, "bInterfaceSubClass", newSVuv(interface->bInterfaceSubClass));
-  hv_stores(rv, "bInterfaceProtocol", newSVuv(interface->bInterfaceProtocol));
-  hv_stores(rv, "iInterface", newSVuv(interface->iInterface));
-  hv_stores(rv, "endpoint", endpoint_array_to_AV(aTHX_ ctx, interface->endpoint, interface->bNumEndpoints));
-  hv_stores(rv, "extra", newSVpvn((const char *) interface->extra, interface->extra_length));
-  return newRV_noinc((SV *) rv);
+    HV *rv = newHV();
+    hv_stores(rv, "bLength", newSVuv(interface->bLength));
+    hv_stores(rv, "bDescriptorType", newSVuv(interface->bDescriptorType));
+    hv_stores(rv, "bInterfaceNumber", newSVuv(interface->bInterfaceNumber));
+    hv_stores(rv, "bAlternateSetting", newSVuv(interface->bAlternateSetting));
+    hv_stores(rv, "bNumEndpoints", newSVuv(interface->bNumEndpoints));
+    hv_stores(rv, "bInterfaceClass", newSVuv(interface->bInterfaceClass));
+    hv_stores(rv, "bInterfaceSubClass", newSVuv(interface->bInterfaceSubClass));
+    hv_stores(rv, "bInterfaceProtocol", newSVuv(interface->bInterfaceProtocol));
+    hv_stores(rv, "iInterface", newSVuv(interface->iInterface));
+    hv_stores(rv, "endpoint", endpoint_array_to_AV(aTHX_ ctx, interface->endpoint, interface->bNumEndpoints));
+    hv_stores(rv, "extra", newSVpvn((const char *) interface->extra, interface->extra_length));
+    return newRV_noinc((SV *) rv);
 }
 
 static SV *
 interface_array_to_AV(pTHX_ libusb_context *ctx, const struct libusb_interface *interface)
 {
-  AV *rv = newAV();
-  for (int i = 0; i < interface->num_altsetting; ++i)
-    av_push(rv, interface_descriptor_to_HV(aTHX_ ctx, &interface->altsetting[i]));
-  return newRV_noinc((SV *) rv);  
+    AV *rv = newAV();
+    for (int i = 0; i < interface->num_altsetting; ++i)
+        av_push(rv, interface_descriptor_to_HV(aTHX_ ctx, &interface->altsetting[i]));
+    return newRV_noinc((SV *) rv);  
 }
 
 static SV *
