@@ -110,6 +110,39 @@ config_descriptor_to_RV(pTHX_ libusb_context *ctx, struct libusb_config_descript
 }
 
 static SV *
+bos_dev_capability_descriptor_to_HV(pTHX_ libusb_context *ctx, struct libusb_bos_dev_capability_descriptor *dev_cap)
+{
+    HV *rv = newHV();
+    hv_stores(rv, "bLength", newSVuv(dev_cap->bLength));
+    hv_stores(rv, "bDescriptorType", newSVuv(dev_cap->bDescriptorType));
+    hv_stores(rv, "bDevCapabilityType", newSVuv(dev_cap->bDevCapabilityType));
+    hv_stores(rv, "dev_capability_data", newSVpvn((const char *) dev_cap->dev_capability_data, dev_cap->bLength - 3));
+    return newRV_noinc((SV *) rv);
+}
+
+static SV *
+dev_capability_array_to_AV(pTHX_ libusb_context *ctx, struct libusb_bos_dev_capability_descriptor **dev_capability, uint8_t bNumDeviceCaps)
+{
+    AV *rv = newAV();
+    for (int i = 0; i < bNumDeviceCaps; ++i)
+        av_push(rv, bos_dev_capability_descriptor_to_HV(aTHX_ ctx, dev_capability[i]));
+    return newRV_noinc((SV *) rv);
+}
+
+static SV *
+bos_descriptor_to_RV(pTHX_ libusb_context *ctx, struct libusb_bos_descriptor *bos)
+{
+    HV *rv = newHV();
+    hv_stores(rv, "bLength", newSVuv(bos->bLength));
+    hv_stores(rv, "bDescriptorType", newSVuv(bos->bDescriptorType));
+    hv_stores(rv, "wTotalLength", newSVuv(bos->wTotalLength));
+    hv_stores(rv, "bNumDeviceCaps", newSVuv(bos->bNumDeviceCaps));
+    hv_stores(rv, "dev_capability", dev_capability_array_to_AV(aTHX_ ctx, bos->dev_capability, bos->bNumDeviceCaps));
+    return newRV_noinc((SV *) rv);
+}
+
+
+static SV *
 device_descriptor_to_RV(pTHX_ struct libusb_device_descriptor *desc)
 {
     HV *rv = newHV();
@@ -150,6 +183,9 @@ pointer_object(pTHX_ const char *class_name, void *pv)
     sv_setref_pv(rv, class_name, pv);
     return rv;
 }
+
+
+
 
 MODULE = USB::LibUSB::XS      PACKAGE = USB::LibUSB::XS
 
@@ -422,6 +458,17 @@ PPCODE:
 
 MODULE = USB::LibUSB      PACKAGE = USB::LibUSB::XS::Device::Handle       PREFIX = libusb_
 
+void
+libusb_get_bos_descriptor(USB::LibUSB::XS::Device::Handle handle, USB::LibUSB::XS ctx)
+PPCODE:
+    struct libusb_bos_descriptor *bos;
+    int rv = libusb_get_bos_descriptor(handle, &bos);
+    mXPUSHi(rv);
+    if (rv == 0) {
+        mXPUSHs(bos_descriptor_to_RV(aTHX_ ctx, bos));
+        libusb_free_bos_descriptor(bos);
+    }
+    
 
 void
 libusb_get_string_descriptor_ascii(USB::LibUSB::XS::Device::Handle dev, unsigned desc_index, int length)
