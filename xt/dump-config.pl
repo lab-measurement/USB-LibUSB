@@ -7,6 +7,7 @@ use blib;
 use USB::LibUSB;
 use Getopt::Long qw/:config gnu_getopt/;
 use Data::Dumper;
+use YAML::XS;
 my $vid;
 my $pid;
 
@@ -19,4 +20,4 @@ my $handle = $ctx->open_device_with_vid_pid(hex $vid, hex $pid);
 my $dev = $handle->get_device();
 my $config = $dev->get_config_descriptor(0);
 
-print Dumper $config;
+print Dump $config;

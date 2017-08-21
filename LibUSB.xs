@@ -47,7 +47,7 @@ endpoint_descriptor_to_HV(pTHX_ libusb_context *ctx, const struct libusb_endpoin
     struct libusb_ss_endpoint_companion_descriptor *ep_comp;
     int value = libusb_get_ss_endpoint_companion_descriptor(ctx, endpoint, &ep_comp);
     if (value == 0) {
-        hv_stores(rv, "ss_ep_comp", ss_ep_comp_to_HV(aTHX_ ep_comp));
+        hv_stores(rv, "ss_endpoint_companion", ss_ep_comp_to_HV(aTHX_ ep_comp));
         libusb_free_ss_endpoint_companion_descriptor(ep_comp);
     }
     else if (value != LIBUSB_ERROR_NOT_FOUND)
@@ -110,13 +110,79 @@ config_descriptor_to_RV(pTHX_ libusb_context *ctx, struct libusb_config_descript
 }
 
 static SV *
+usb_2_0_extension_to_HV(pTHX_ libusb_context *ctx, struct libusb_bos_dev_capability_descriptor *dev_cap)
+{
+    struct libusb_usb_2_0_extension_descriptor *usb_2_0_extension;
+    int value =  libusb_get_usb_2_0_extension_descriptor(ctx, dev_cap, &usb_2_0_extension);
+    if (value != 0)
+        croak("error in libusb_get_usb_2_0_extension_descriptor");
+    HV *rv = newHV();
+    hv_stores(rv, "bLength", newSVuv(usb_2_0_extension->bLength));
+    hv_stores(rv, "bDescriptorType", newSVuv(usb_2_0_extension->bDescriptorType));
+    hv_stores(rv, "bDevCapabilityType", newSVuv(usb_2_0_extension->bDevCapabilityType));
+    hv_stores(rv, "bmAttributes", newSVuv(usb_2_0_extension->bmAttributes));
+    libusb_free_usb_2_0_extension_descriptor(usb_2_0_extension);
+    return newRV_noinc((SV *) rv);
+}
+
+static SV *
+ss_usb_device_capability_to_HV(pTHX_ libusb_context *ctx, struct libusb_bos_dev_capability_descriptor *dev_cap)
+{
+    struct libusb_ss_usb_device_capability_descriptor *ss_usb_device_capability;
+    int value =  libusb_get_ss_usb_device_capability_descriptor(ctx, dev_cap, &ss_usb_device_capability);
+    if (value != 0)
+        croak("error in libusb_get_ss_usb_device_capability_descriptor");
+    HV *rv = newHV();
+    hv_stores(rv, "bLength", newSVuv(ss_usb_device_capability->bLength));
+    hv_stores(rv, "bDescriptorType", newSVuv(ss_usb_device_capability->bDescriptorType));
+    hv_stores(rv, "bDevCapabilityType", newSVuv(ss_usb_device_capability->bDevCapabilityType));
+    hv_stores(rv, "bmAttributes", newSVuv(ss_usb_device_capability->bmAttributes));
+    hv_stores(rv, "wSpeedSupported", newSVuv(ss_usb_device_capability->wSpeedSupported));
+    hv_stores(rv, "bFunctionalitySupport", newSVuv(ss_usb_device_capability->bFunctionalitySupport));
+    hv_stores(rv, "bU1DevExitLat", newSVuv(ss_usb_device_capability->bU1DevExitLat));
+    hv_stores(rv, "bU2DevExitLat", newSVuv(ss_usb_device_capability->bU2DevExitLat));
+    libusb_free_ss_usb_device_capability_descriptor(ss_usb_device_capability);
+    return newRV_noinc((SV *) rv);
+}
+
+static SV *
+container_id_to_HV(pTHX_ libusb_context *ctx, struct libusb_bos_dev_capability_descriptor *dev_cap)
+{
+    struct libusb_container_id_descriptor *container_id;
+    int value =  libusb_get_container_id_descriptor(ctx, dev_cap, &container_id);
+    if (value != 0)
+        croak("error in libusb_get_container_id_descriptor");
+    HV *rv = newHV();
+    hv_stores(rv, "bLength", newSVuv(container_id->bLength));
+    hv_stores(rv, "bDescriptorType", newSVuv(container_id->bDescriptorType));
+    hv_stores(rv, "bDevCapabilityType", newSVuv(container_id->bDevCapabilityType));
+    hv_stores(rv, "bReserved", newSVuv(container_id->bReserved));
+    hv_stores(rv, "ContainerID", newSVpvn((const char *) container_id->ContainerID, 16));
+    libusb_free_container_id_descriptor(container_id);
+    return newRV_noinc((SV *) rv);
+}
+
+static SV *
 bos_dev_capability_descriptor_to_HV(pTHX_ libusb_context *ctx, struct libusb_bos_dev_capability_descriptor *dev_cap)
 {
     HV *rv = newHV();
     hv_stores(rv, "bLength", newSVuv(dev_cap->bLength));
     hv_stores(rv, "bDescriptorType", newSVuv(dev_cap->bDescriptorType));
-    hv_stores(rv, "bDevCapabilityType", newSVuv(dev_cap->bDevCapabilityType));
+    uint capability_type = dev_cap->bDevCapabilityType;
+    hv_stores(rv, "bDevCapabilityType", newSVuv(capability_type));
     hv_stores(rv, "dev_capability_data", newSVpvn((const char *) dev_cap->dev_capability_data, dev_cap->bLength - 3));
+    switch (capability_type) {
+        case LIBUSB_BT_USB_2_0_EXTENSION:
+            hv_stores(rv, "usb_2_0_extension", usb_2_0_extension_to_HV(aTHX_ ctx, dev_cap));
+            break;
+        case LIBUSB_BT_SS_USB_DEVICE_CAPABILITY:
+            hv_stores(rv, "ss_usb_device_capability", ss_usb_device_capability_to_HV(aTHX_ ctx, dev_cap));
+            break;
+        case LIBUSB_BT_CONTAINER_ID:
+            hv_stores(rv, "container_id", container_id_to_HV(aTHX_ ctx, dev_cap));
+            break;
+    }
+    
     return newRV_noinc((SV *) rv);
 }
 

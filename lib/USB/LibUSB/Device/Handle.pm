@@ -103,6 +103,14 @@ sub set_auto_detach_kernel_driver {
 
 # Descriptors
 
+sub get_bos_descriptor {
+    my $self = shift;
+    my ($rv, $bos) = $self->handle()->get_bos_descriptor(
+        $self->ctx()->ctx(), @_);
+    $self->_handle_error($rv, "get_bos_descriptor");
+    return $bos;
+}
+
 sub get_string_descriptor_ascii {
     my $self = shift;
     my ($rv, $string) = $self->handle()->get_string_descriptor_ascii(@_);

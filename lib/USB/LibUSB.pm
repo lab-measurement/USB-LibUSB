@@ -558,7 +558,7 @@ following keys:
 =back
 
 All values are scalars. If the endpoint supports USB 3.0 SuperSpeed, the
-hashref will contain an additional key C<ss_ep_comp> which holds a
+hashref will contain an additional key C<superspeed> which holds a
 SuperSpeed Endpoint Companion descriptor with the following keys:
 
 =over
