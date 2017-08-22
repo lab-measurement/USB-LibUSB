@@ -402,16 +402,20 @@ All descriptors are returned as hash references.
 
 =head3 get_active_config_descriptor
 
- my ($rv, $config) = $dev->get_active_config_descriptor();
+ my ($rv, $config) = $dev->get_active_config_descriptor($ctx);
  my $iConfiguration = $config->{iConfiguration};
 
 =head3 get_config_descriptor
 
- my ($rv, $config) = $dev->get_config_descriptor($config_index);
+ my ($rv, $config) = $dev->get_config_descriptor($ctx, $config_index);
 
 =head3 get_config_descriptor_by_value
 
- my ($rv, $config) = $dev->get_config_descriptor_by_value($bConfigurationValue);
+ my ($rv, $config) = $dev->get_config_descriptor_by_value($ctx, $bConfigurationValue);
+
+=head3 get_bos_descriptor
+
+ my ($rv, $bos) = $handle->get_bos_descriptor($ctx);
 
 =head3 get_string_descriptor_ascii
 

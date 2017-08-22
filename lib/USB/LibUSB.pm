@@ -587,6 +587,63 @@ Return config descriptor as hashref.
 
 Return config descriptor as hashref.
 
+=head3 get_bos_descriptor
+
+ my $bos = $handle->get_bos_descriptor();
+
+Return BOS descriptor as hashref with the following keys:
+
+=over
+
+=item bLength
+
+=item bDescriptorType
+
+=item wTotalLength
+
+=item bNumDeviceCaps
+
+=item dev_capability
+
+=back
+
+C<dev_capability> holds an arrayref of BOS Device Capability descriptors. They
+have the following keys:
+
+=over
+
+=item bLength
+
+=item bDescriptorType
+
+=item bDevCapabilityType
+
+=item dev_capability_data
+
+=back
+
+Additional parsing of the capability data is performed if C<bDevCapabilityType>
+has one of the following values:
+
+=over
+
+=item LIBUSB_BT_USB_2_0_EXTENSION
+
+The hashref will contain a key C<usb_2_0_extension>.
+
+=item  LIBUSB_BT_SS_USB_DEVICE_CAPABILITY 
+
+The hashref will contain a key C<ss_usb_device_capability>.
+
+=item LIBUSB_BT_CONTAINER_ID
+
+The hashref will contain a key C<container_id>.
+
+=back
+
+
+
+
 =head3 get_string_descriptor_ascii
 
  my $data = $handle->get_string_descriptor_ascii($desc_index, $length);
