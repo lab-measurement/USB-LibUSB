@@ -9,6 +9,7 @@ install:
      %cygwin% "apt-cyg install libcrypt-devel libusb1.0-devel"
 build_script:
   - |
+     %cygwin% "cd $APPVEYOR_BUILD_FOLDER && cpan App::cpanminus"
      %cygwin% "cd $APPVEYOR_BUILD_FOLDER && perl Makefile.PL"
      %cygwin% "cd $APPVEYOR_BUILD_FOLDER && make"
      %cygwin% "cd $APPVEYOR_BUILD_FOLDER && cpanm Test::Pod"

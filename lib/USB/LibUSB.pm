@@ -231,17 +231,28 @@ number). Easy to build more functionality without knowing about XS.
 
 =head1 INSTALLATION
 
+=head2 Prerequisites
+
+=head3 Linux/UNIX
+
 This requires libusb development files and pkg-config installed.
 
 On Debian like B<Linux> all you get these with
 
  $ apt-get install libusb-1.0-0-dev pkg-config
 
-On B<Windows>, the only tested build so far is with
-L<Cygwin|https://www.cygwin.com/>. You need the pkg-config, libusb1.0-devel and
+On L<Cygwin|https://www.cygwin.com/> you need the pkg-config, libusb1.0-devel and
 libcrypt-devel packages.
 
-The rest of the installation can be done by a cpan client like cpanm:
+=head3 Windows
+
+ > SET USB_LIBUSB_INCLUDE=-IC:\Users\simon\libusb-1.0\include\libusb-1.0
+ > SET USB_LIBUSB_LIBS
+
+
+=head2 Building USB::LibUSB
+
+The rest of the installation can be done by a CPAN client like cpanm:
 
  $ cpanm USB::LibUSB
 
