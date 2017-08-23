@@ -44,8 +44,19 @@ WriteMakefile(
     DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
     INC               => $inc, # e.g., '-I. -I/usr/include/other'
     CCFLAGS           => '-Wall -std=gnu99',
-	# Un-comment this if you add C files to link with later:
-    # OBJECT            => '$(O_FILES)', # link all the C files too
+    META_MERGE => {
+        'meta-spec' => { version => 2 },
+        resources => {
+            homepage => 'http://www.labmeasurement.de',
+            repository => {
+                type => 'git',
+                url => 'git://github.com/lab-measurement/USB-LibUSB.git',
+                web => 'https://github.com/lab-measurement/USB-LibUSB',
+            },
+            x_MailingList => 'https://www-mailman.uni-regensburg.de/mailman/listinfo/lab-measurement-users',
+            x_IRC => 'irc://chat.freenode.net/#labmeasurement',
+        }
+    }
 );
 if  (eval {require ExtUtils::Constant; 1}) {
   # If you edit these definitions to change the constants used by this module,
