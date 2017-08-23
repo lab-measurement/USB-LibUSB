@@ -168,7 +168,7 @@ bos_dev_capability_descriptor_to_HV(pTHX_ libusb_context *ctx, struct libusb_bos
     HV *rv = newHV();
     hv_stores(rv, "bLength", newSVuv(dev_cap->bLength));
     hv_stores(rv, "bDescriptorType", newSVuv(dev_cap->bDescriptorType));
-    uint capability_type = dev_cap->bDevCapabilityType;
+    unsigned capability_type = dev_cap->bDevCapabilityType;
     hv_stores(rv, "bDevCapabilityType", newSVuv(capability_type));
     hv_stores(rv, "dev_capability_data", newSVpvn((const char *) dev_cap->dev_capability_data, dev_cap->bLength - 3));
     switch (capability_type) {
