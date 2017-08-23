@@ -1,17 +1,31 @@
 environment:
   matrix:
-    - cygwin: c:\cygwin64\bin\sh -lc
-    - cygwin: c:\cygwin\bin\sh -lc
-
+    - strawberry_version: 5.26.0.1
+      make_name: gmake
+    - strawberry_version: 5.24.1.1
+      make_name: dmake
+    - strawberry_version: 5.22.3.1
+      make_name: dmake
+    - strawberry_version: 5.20.3.3
+      make_name: dmake
+    - strawberry_version: 5.18.4.1
+      make_name: dmake
+    - strawberry_version: 5.16.3.20170202
+      make_name: dmake
+    - strawberry_version: 5.14.4.1
+      make_name: dmake
+      
 install:
-  - |
-     %cygwin% "wget rawgit.com/transcode-open/apt-cyg/master/apt-cyg -O /usr/bin/apt-cyg && chmod u+x /usr/bin/apt-cyg"
-     %cygwin% "apt-cyg install libcrypt-devel libusb1.0-devel"
-build_script:
-  - |
-     %cygwin% "cd $APPVEYOR_BUILD_FOLDER && export PERL_MM_USE_DEFAULT=1 && cpan App::cpanminus"
-     %cygwin% "cd $APPVEYOR_BUILD_FOLDER && perl Makefile.PL"
-     %cygwin% "cd $APPVEYOR_BUILD_FOLDER && cpanm --installdeps ."
-     %cygwin% "cd $APPVEYOR_BUILD_FOLDER && make"
-     %cygwin% "cd $APPVEYOR_BUILD_FOLDER && cpanm Test::Pod"
-     %cygwin% "cd $APPVEYOR_BUILD_FOLDER && prove -bv t"
+  - choco install --allowemptychecksum strawberryperl --version %strawberry_version%
+  - path C:\strawberry\perl\bin;C:\strawberry\perl\sidirte\bin;C:\strawberry\c\bin;%PATH%
+  - perl -V
+  - ps: Invoke-WebRequest https://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.21/libusb-1.0.21.7z/download -OutFile libusb-1.0.7z
+  - dir
+
+
+
+
+
+
+
+

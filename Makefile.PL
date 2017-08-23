@@ -2,7 +2,7 @@ use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 
-my $libs = $ENV{USB_LIBUSB_LIBS};
+my $libs = $ENV{USB_LIBUSB_LIB};
 if (not defined $libs) {
     $libs = `pkg-config --libs libusb-1.0`;
 }
@@ -13,7 +13,11 @@ if (not defined $inc) {
 }
 
 if (not defined $libs or not defined $inc) {
-    die "Did not find libusb include/library path."
+    die <<"EOF"
+Did not find include or library path for libusb 1.0.
+See section INSTALLATION in the module documentation.
+EOF
+        
 }
 
 WriteMakefile(

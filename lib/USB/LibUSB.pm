@@ -246,10 +246,17 @@ libcrypt-devel packages.
 
 =head3 Windows
 
+On Windows you have to manually download the libusb binaries from
+L<http://libusb.info> and extract them somewhere.
+
+Assuming that the location of the libusb folder is
+F<C:\Users\simon\libusb-1.0>, you need to set the
+C<USB_LIBUSB_INCLUDE> and C<USB_LIBUSB_LIB> environment variables as follows:
+
  > SET USB_LIBUSB_INCLUDE=-IC:\Users\simon\libusb-1.0\include\libusb-1.0
- > SET USB_LIBUSB_LIBS
-
-
+ > SET USB_LIBUSB_LIB=-lC:\Users\simon\libusb-1.0\MinGW64\dll\libusb-1.0.dll.a
+ > path C:\Users\simon\libusb-1.0\MinGW64\dll;%PATH%
+ 
 =head2 Building USB::LibUSB
 
 The rest of the installation can be done by a CPAN client like cpanm:
