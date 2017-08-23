@@ -12,3 +12,4 @@ const-*.inc
 /LibUSB.bs
 /USB-LibUSB-*
 /MANIFEST
+/MANIFEST.bak

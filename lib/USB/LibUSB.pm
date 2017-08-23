@@ -596,6 +596,53 @@ SuperSpeed Endpoint Companion descriptor with the following keys:
 
 =back
 
+=head4 Example
+
+Dump C<$config> with L<YAML::XS>:
+
+ use YAML::XS;
+ print Dump($config);
+ 
+For a B<Linux Foundation 3.0 root hub>:
+
+ ---
+ MaxPower: 0
+ bConfigurationValue: 1
+ bDescriptorType: 2
+ bLength: 9
+ bNumInterfaces: 1
+ bmAttributes: 224
+ extra: ~
+ iConfiguration: 0
+ interface:
+ - bAlternateSetting: 0
+   bDescriptorType: 4
+   bInterfaceClass: 9
+   bInterfaceNumber: 0
+   bInterfaceProtocol: 0
+   bInterfaceSubClass: 0
+   bLength: 9
+   bNumEndpoints: 1
+   endpoint:
+   - bDescriptorType: 5
+     bEndpointAddress: 129
+     bInterval: 12
+     bLength: 7
+     bRefresh: 0
+     bSynchAddress: 0
+     bmAttributes: 3
+     extra: "\x060\0\0\x02\0"
+     ss_endpoint_companion:
+       bDescriptorType: 48
+       bLength: 6
+       bMaxBurst: 0
+       bmAttributes: 0
+       wBytesPerInterval: 2
+     wMaxPacketSize: 4
+   extra: ~
+   iInterface: 0
+ wTotalLength: 31
+
 =head3 get_config_descriptor
 
  my $config = $dev->get_config_descriptor($config_index);
@@ -662,8 +709,33 @@ The hashref will contain a key C<container_id>.
 
 =back
 
+=head4 Example
 
+Dump C<$bos> with L<YAML::XS>:
 
+ use YAML::XS;
+ print Dump($bos);
+ 
+For a B<Linux Foundation 3.0 root hub>:
+
+ bDescriptorType: 15
+ bLength: 5
+ bNumDeviceCaps: 1
+ dev_capability:
+ - bDescriptorType: 16
+   bDevCapabilityType: 3
+   bLength: 10
+   dev_capability_data: "\x02\b\0\x03\0\0\0"
+   ss_usb_device_capability:
+     bDescriptorType: 16
+     bDevCapabilityType: 3
+     bFunctionalitySupport: 3
+     bLength: 10
+     bU1DevExitLat: 0
+     bU2DevExitLat: 0
+     bmAttributes: 2
+     wSpeedSupported: 8
+ wTotalLength: 15
 
 =head3 get_string_descriptor_ascii
 

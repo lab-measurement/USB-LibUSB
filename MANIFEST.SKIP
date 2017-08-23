@@ -1,6 +1,8 @@
 .o$
 ^.git
 ^fallback/
+^.travis.yml$
+^appveyor.yml$
 
 # dist builds
 ^USB-LibUSB
@@ -11,7 +13,9 @@
 ^MakeMaker-\d
 .inc$
 ^MANIFEST.bak$
-
+^LibUSB.bs$
+^LibUSB.c$
+^pm_to_blib$
 ^MYMETA
 
 
