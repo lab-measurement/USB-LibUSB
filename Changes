@@ -1,6 +1,9 @@
-Revision history for Perl extension LibUSB.
+Revision history for Perl extension USB::LibUSB.
 
-0.01  Fri May 12 17:27:05 2017
-	- original version; created by h2xs 1.23 with options
-		-n LibUSB /usr/include/libusb-1.0/libusb.h
-
+0.01  
+	- first CPAN release
+    - on PrePAN: http://prepan.org/module/nYfNhvSqeCm
+    - Implement all portable features of libusb-1.0 including USB 3.0 descriptors
+    - Not yet implemented: Async interface, hotplug events, polling
+    - Raw XS interface: USB::LibUSB::XS
+    - More High-level interface: USB::LibUSB (use Moo for OO)

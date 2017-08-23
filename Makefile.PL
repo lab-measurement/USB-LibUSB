@@ -2,13 +2,36 @@ use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 
-my $libs = `pkg-config --libs libusb-1.0`;
-my $inc = `pkg-config --cflags-only-I libusb-1.0`;
+my $libs = $ENV{USB_LIBUSB_LIBS};
+if (not defined $libs) {
+    $libs = `pkg-config --libs libusb-1.0`;
+}
+
+my $inc = $ENV{USB_LIBUSB_INCLUDE};
+if (not defined $inc) {
+    $inc = `pkg-config --cflags-only-I libusb-1.0`;
+}
+
+if (not defined $libs or not defined $inc) {
+    die "Did not find libusb include/library path."
+}
 
 WriteMakefile(
     NAME              => 'USB::LibUSB',
     VERSION_FROM      => 'lib/USB/LibUSB.pm', # finds $VERSION
-    PREREQ_PM         => {}, # e.g., Module::Name => 1.1
+    MIN_PERL_VERSION => "5.008003",
+    PREREQ_PM => {
+        "Moo" => 0,
+        "AutoLoader" => 0,
+        "Carp" => 0,
+        "Exporter" => 0,
+        "XSLoader" => 0,
+        "strict" => 0,
+        "warnings" => 0
+    },
+    TEST_REQUIRES => {
+        "Test::More" => 0
+    },
     ABSTRACT_FROM     => 'lib/USB/LibUSB.pm', # retrieve abstract from module
     AUTHOR            =>
     'Simon Reinhardt <simon.reinhardt@stud.uni-regensburg.de>',
@@ -16,7 +39,7 @@ WriteMakefile(
     LIBS              => [$libs], # e.g., '-lm'
     DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
     INC               => $inc, # e.g., '-I. -I/usr/include/other'
-    CCFLAGS           => '-Wall -std=gnu99',
+    CCFLAGS           => '-Wall',
 	# Un-comment this if you add C files to link with later:
     # OBJECT            => '$(O_FILES)', # link all the C files too
 );
