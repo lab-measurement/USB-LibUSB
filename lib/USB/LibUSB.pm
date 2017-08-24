@@ -237,19 +237,19 @@ number). Easy to build more functionality without knowing about XS.
 
 This requires libusb development files and pkg-config installed.
 
-On Debian like B<Linux> all you get these with
+On Debian like B<Linux>:
 
  $ apt-get install libusb-1.0-0-dev pkg-config
 
-On L<Cygwin|https://www.cygwin.com/> you need the pkg-config, libusb1.0-devel and
-libcrypt-devel packages.
+On L<Cygwin|https://www.cygwin.com/> you need the pkg-config, libusb1.0-devel
+and libcrypt-devel packages.
 
 =head3 Windows
 
 On Windows you have to manually download the libusb binaries from
 L<http://libusb.info> and extract them somewhere.
 
-Assuming that the location of the libusb folder is
+Assuming that the location of the extracted libusb folder is
 F<C:\Users\simon\libusb-1.0>, you need to set the
 C<USB_LIBUSB_INCLUDE> and C<USB_LIBUSB_LIB> environment variables as follows:
 
@@ -257,8 +257,8 @@ C<USB_LIBUSB_INCLUDE> and C<USB_LIBUSB_LIB> environment variables as follows:
  > SET USB_LIBUSB_LIB=-lC:\Users\simon\libusb-1.0\MinGW64\dll\libusb-1.0.dll.a
  > path C:\Users\simon\libusb-1.0\MinGW64\dll;%PATH%
 
-The latest supported version of Strawberry Perl is 5.20. The build fails for
-newer versions.
+The latest supported version of Strawberry Perl is 5.20. In our tests the build
+fails for newer versions.
 
 =head2 Building USB::LibUSB
 

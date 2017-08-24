@@ -3,6 +3,7 @@
 ^fallback/
 ^.travis.yml$
 ^appveyor.yml$
+^update-version.pl$
 
 # dist builds
 ^USB-LibUSB
