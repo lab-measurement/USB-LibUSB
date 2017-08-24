@@ -46,7 +46,8 @@ for my $module (find_modules()) {
 system('git', 'commit', '-am', "update version $version -> $new_version");
 system('git', 'tag', '-a', "v$new_version", '-m', "version $new_version");
 
-
+# Rerun Makefile.PL to get the new version
+system(qw/perl Makefile.PL/);
 
 
 

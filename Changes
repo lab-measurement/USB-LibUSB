@@ -7,3 +7,6 @@ Revision history for Perl extension USB::LibUSB.
     - Not yet implemented: Async interface, hotplug events, polling
     - Raw XS interface: USB::LibUSB::XS
     - More High-level interface: USB::LibUSB (currently uses Moo for OO)
+
+0.02 2017-08-24
+    - Add repo data to META
