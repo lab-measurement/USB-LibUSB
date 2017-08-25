@@ -594,7 +594,7 @@ MODULE = USB::LibUSB      PACKAGE = USB::LibUSB::XS::Device::Handle       PREFIX
 void
 libusb_control_transfer_write(USB::LibUSB::XS::Device::Handle handle, unsigned bmRequestType, unsigned bRequest, unsigned wValue, unsigned wIndex, SV *data, unsigned timeout)
 PPCODE:
-    char *bytes;
+    const char *bytes;
     STRLEN len;
     bytes = SvPV(data, len);
     if (len == 0)
@@ -617,7 +617,7 @@ void
 libusb_bulk_transfer_write(USB::LibUSB::XS::Device::Handle handle, unsigned endpoint, SV *data, unsigned timeout)
 PPCODE:
     STRLEN len;
-    char *bytes = SvPV(data, len);
+    const char *bytes = SvPV(data, len);
     int transferred;
     int rv = libusb_bulk_transfer(handle, endpoint, (unsigned char *) bytes, len, &transferred, timeout);
     mXPUSHi(rv);
@@ -642,7 +642,7 @@ void
 libusb_interrupt_transfer_write(USB::LibUSB::XS::Device::Handle handle, unsigned endpoint, SV *data, unsigned timeout)
 PPCODE:
     STRLEN len;
-    char *bytes = SvPV(data, len);
+    const char *bytes = SvPV(data, len);
     int transferred;
     int rv = libusb_interrupt_transfer(handle, endpoint, (unsigned char *) bytes, len, &transferred, timeout);
     mXPUSHi(rv);
