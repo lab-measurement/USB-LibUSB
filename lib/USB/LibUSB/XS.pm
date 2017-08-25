@@ -10,7 +10,10 @@ use AutoLoader;
 our @ISA = qw(Exporter);
 
 our @EXPORT = qw(
+    libusb_has_capability
     libusb_error_name
+    libusb_get_version
+    libusb_setlocale
     libusb_strerror
 
 	LIBUSBX_API_VERSION

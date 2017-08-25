@@ -455,7 +455,7 @@ libusb_error_name(int error_code)
 
 
 void
-libusb_get_version(void)
+libusb_get_version()
 PPCODE:
     const struct libusb_version *version = libusb_get_version();
     mXPUSHs(version_to_RV(aTHX_ version));
