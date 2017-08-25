@@ -377,21 +377,7 @@ Implementation status: complete.
 
 =head2 USB descriptors
 
-Implementation status: The following descriptor types are not yet implemented.
-
-=over
-
-=item * SuperSpeed endpoint companion descriptor
-
-=item * Binary Object Store (BOS) descriptor
-
-=item * USB 2.0 Extension descriptor
-
-=item * SuperSpeed USB Device Capability descriptor
-
-=item * Container ID descriptor
-
-=back
+Implementation status: complete.
 
 All descriptors are returned as hash references.
 
