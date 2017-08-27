@@ -10,3 +10,6 @@ Revision history for Perl extension USB::LibUSB.
 
 0.02 2017-08-24
     - Add repo data to META
+
+0.03 2017-08-27
+    - Add missing functions to @EXPORT list
