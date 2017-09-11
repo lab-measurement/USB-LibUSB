@@ -235,7 +235,7 @@ number). Easy to build more functionality without knowing about XS.
 
 =head3 Linux/UNIX
 
-This requires libusb development files and pkg-config installed.
+This requires libusb (>= 1.0.19) development files and pkg-config installed.
 
 On Debian like B<Linux>:
 
@@ -774,7 +774,7 @@ To be implemented.
  
 =head3 bulk_tranfer_write
 
- $handle->bulk_transfer_write($endpoint, $data, $timeout);
+ my $transferred = $handle->bulk_transfer_write($endpoint, $data, $timeout);
  
 =head3 bulk_transfer_read
 
@@ -782,7 +782,7 @@ To be implemented.
  
 =head3 interrupt_transfer_write
 
- $handle->interrupt_transfer_write($endpoint, $data, $timeout);
+ my $transferred = $handle->interrupt_transfer_write($endpoint, $data, $timeout);
 
 =head3 interrupt_transfer_read
 
