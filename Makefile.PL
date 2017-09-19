@@ -7,9 +7,15 @@ my $inc = $ENV{USB_LIBUSB_INCLUDE};
 
 
 if (not defined $libs or not defined $inc) {
-    `pkg-config --atleast-version=1.0.19 libusb-1.0`;
+    `pkg-config --exists libusb-1.0`;
     if ($?) {
-        die "Need at least version 1.0.19 of libusb-1.0";
+        die "pkg-config does not know libusb-1.0";
+    }
+    my $min_version = '1.0.17';
+    `pkg-config --atleast-version=$min_version libusb-1.0`;
+    if ($?) {
+        die "Minimum required version of libusb-1.0 is $min_version. Installed: ",
+        `pkg-config --modversion libusb-1.0`;
     }
     $inc = `pkg-config --cflags-only-I libusb-1.0`;
     $libs = `pkg-config --libs libusb-1.0`;

@@ -235,7 +235,7 @@ number). Easy to build more functionality without knowing about XS.
 
 =head3 Linux/UNIX
 
-This requires libusb (>= 1.0.19) development files and pkg-config installed.
+This requires libusb (>= 1.0.17) development files and pkg-config installed.
 
 On Debian like B<Linux>:
 
