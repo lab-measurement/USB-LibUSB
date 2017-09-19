@@ -3,14 +3,18 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 
 my $libs = $ENV{USB_LIBUSB_LIB};
-if (not defined $libs) {
+my $inc = $ENV{USB_LIBUSB_INCLUDE};
+
+
+if (not defined $libs or not defined $inc) {
+    `pkg-config --atleast-version=1.0.19 libusb-1.0`;
+    if ($?) {
+        die "Need at least version 1.0.19 of libusb-1.0";
+    }
+    $inc = `pkg-config --cflags-only-I libusb-1.0`;
     $libs = `pkg-config --libs libusb-1.0`;
 }
 
-my $inc = $ENV{USB_LIBUSB_INCLUDE};
-if (not defined $inc) {
-    $inc = `pkg-config --cflags-only-I libusb-1.0`;
-}
 
 if (not defined $libs or not defined $inc) {
     die <<"EOF"
