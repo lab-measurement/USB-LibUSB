@@ -13,3 +13,4 @@ const-*.inc
 /USB-LibUSB-*
 /MANIFEST
 /MANIFEST.bak
+/update-version.pl
