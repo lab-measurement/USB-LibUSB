@@ -1,5 +1,9 @@
 Revision history for Perl extension USB::LibUSB.
 
+0.05 2017-09-29
+    - Add driver installation docs for Windows
+    - document 'last_retval' method
+
 0.04 2017-09-21
     - Fix documentation of bulk_write and interrupt_write
     - Makefile.PL: Check libusb version with pkg-config
