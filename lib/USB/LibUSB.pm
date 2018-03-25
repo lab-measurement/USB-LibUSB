@@ -815,7 +815,7 @@ Feel free to contact us at the #labmeasurement channel on Freenode IRC.
 
 =head1 AUTHOR
 
-Simon Reinhardt, E<lt>simon.reinhardt@stud.uni-regensburg.deE<gt>
+Simon Reinhardt, E<lt>simon.reinhardt@physik.uni-r.deE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
