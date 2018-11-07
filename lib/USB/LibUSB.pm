@@ -197,7 +197,8 @@ USB::LibUSB - Perl interface to the libusb-1.0 API.
 
  my $ctx = USB::LibUSB->init();
  my $handle = $ctx->open_device_with_vid_pid(0x1111, 0x2222);
- $handle->set_auto_detach_kernel_driver(1);
+
+ $handle->set_auto_detach_kernel_driver(1); # Linux only
 
  # We want to use interface 0
  $handle->claim_interface(0);
@@ -380,7 +381,7 @@ Like C<open_device_with_vid_pid>, but also requires a serial number.
 
 =head3 get_device
 
- my $dev = $hanlde->get_device();
+ my $dev = $handle->get_device();
 
 =head3 get_configuration
 
@@ -425,6 +426,8 @@ Like C<open_device_with_vid_pid>, but also requires a serial number.
 =head3 set_auto_detach_kernel_driver
 
  $handle->set_auto_detach_kernel_driver($enable);
+
+Throws exception on Windows and Darwin.
 
 =head2 Miscellaneous
 
