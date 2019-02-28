@@ -543,7 +543,7 @@ Return hashref C<$config> with the following keys:
 =back
 
 With the exception of B<interface>, all values are scalars.
-B<interface> holds an arrayref of interface descriptors. These are hashrefs with the
+B<interface> holds an arrayref of bNumInterfaces interface descriptors. Each interface consists of an array of alternate settings. These are hashrefs with the
 following keys:
 
 =over
@@ -635,33 +635,34 @@ For a B<Linux Foundation 3.0 root hub>:
  extra: ~
  iConfiguration: 0
  interface:
- - bAlternateSetting: 0
-   bDescriptorType: 4
-   bInterfaceClass: 9
-   bInterfaceNumber: 0
-   bInterfaceProtocol: 0
-   bInterfaceSubClass: 0
-   bLength: 9
-   bNumEndpoints: 1
-   endpoint:
-   - bDescriptorType: 5
-     bEndpointAddress: 129
-     bInterval: 12
-     bLength: 7
-     bRefresh: 0
-     bSynchAddress: 0
-     bmAttributes: 3
-     extra: "\x060\0\0\x02\0"
-     ss_endpoint_companion:
-       bDescriptorType: 48
-       bLength: 6
-       bMaxBurst: 0
-       bmAttributes: 0
-       wBytesPerInterval: 2
-     wMaxPacketSize: 4
-   extra: ~
-   iInterface: 0
+ - - bAlternateSetting: 0
+     bDescriptorType: 4
+     bInterfaceClass: 9
+     bInterfaceNumber: 0
+     bInterfaceProtocol: 0
+     bInterfaceSubClass: 0
+     bLength: 9
+     bNumEndpoints: 1
+     endpoint:
+     - bDescriptorType: 5
+       bEndpointAddress: 129
+       bInterval: 12
+       bLength: 7
+       bRefresh: 0
+       bSynchAddress: 0
+       bmAttributes: 3
+       extra: "\x060\0\0\x02\0"
+       ss_endpoint_companion:
+         bDescriptorType: 48
+         bLength: 6
+         bMaxBurst: 0
+         bmAttributes: 0
+         wBytesPerInterval: 2
+       wMaxPacketSize: 4
+     extra: ~
+     iInterface: 0
  wTotalLength: 31
+ 
 
 =head3 get_config_descriptor
 
