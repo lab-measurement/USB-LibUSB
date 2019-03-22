@@ -53,7 +53,7 @@ WriteMakefile(
     LIBS              => [$libs], # e.g., '-lm'
     DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
     INC               => $inc, # e.g., '-I. -I/usr/include/other'
-    CCFLAGS           => '-Wall -std=gnu99',
+    CCFLAGS           => "$Config{ccflags} -Wall -std=gnu99",
     META_MERGE => {
         'meta-spec' => { version => 2 },
         resources => {
