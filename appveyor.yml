@@ -1,12 +1,14 @@
 environment:
   matrix:
+    - strawberry_version: 5.28.1.1
+      make_name: gmake
+    - strawberry_version: 5.28.1.1 --x86
+      make_name: gmake
+    - strawberry_version: 5.26.3.1
+      make_name: gmake
+    - strawberry_version: 5.20.3.3 --x86
+      make_name: dmake
     - strawberry_version: 5.20.3.3
-      make_name: dmake
-    - strawberry_version: 5.18.4.1
-      make_name: dmake
-    - strawberry_version: 5.16.3.20170202
-      make_name: dmake
-    - strawberry_version: 5.14.4.1
       make_name: dmake
       
 install:
