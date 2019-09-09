@@ -213,20 +213,7 @@ This module provides a Perl interface to the libusb-1.0 API.
 It provides access to most basic libusb functionality including read-out of
 device descriptors and synchronous device I/O. 
 
-The design of the module is basically a two-tier system:
-
-=over
-
-=item L<USB::LibUSB::XS>
-
-Raw XS interface, stay as close at possible to the libusb API. Not intended to
-be used directly.
-
-=item USB::LibUSB
-
-Based on USB::LibUSB::XS, adds convenient error handling and additional
-high-level functionality (e.g. device discovery with vid, pid and serial
-number). Easy to build more functionality without knowing about XS.
+Staying as close as possible to the libusb-1.0 API, this module adds convenient error handling and additional high-level functionality (e.g. device discovery with vid, pid and serial number). Easy to build more functionality without knowing about XS.
 
 =back
 
