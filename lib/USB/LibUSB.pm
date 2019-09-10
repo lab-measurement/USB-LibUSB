@@ -215,8 +215,6 @@ device descriptors and synchronous device I/O.
 
 Staying as close as possible to the libusb-1.0 API, this module adds convenient error handling and additional high-level functionality (e.g. device discovery with vid, pid and serial number). Easy to build more functionality without knowing about XS.
 
-=back
-
 =head1 INSTALLATION
 
 =head2 Prerequisites
