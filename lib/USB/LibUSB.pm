@@ -13,7 +13,7 @@ use Carp;
 use Exporter 'import';
 our @EXPORT = @USB::LibUSB::XS::EXPORT;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 has 'ctx' => (
     is => 'ro',
