@@ -9,7 +9,7 @@ environment:
     - strawberry_version: 5.20.3.3
       make_name: dmake
       
-install:
+build_script:
   - choco install --allowemptychecksum strawberryperl --version %strawberry_version%
   - path C:\strawberry\perl\bin;C:\strawberry\perl\sidirte\bin;C:\strawberry\c\bin;%PATH%
   - perl -V
@@ -23,14 +23,13 @@ install:
   - set USB_LIBUSB_INCLUDE=-Ilibusb-1.0\include\libusb-1.0
   - set USB_LIBUSB_LIB=-llibusb-1.0\MinGW64\dll\libusb-1.0.dll.a
   - path libusb-1.0\MinGW64\dll;%PATH%
-build_script:
   - perl Makefile.PL
   - cpanm --installdeps .
   - '%make_name%'
   - prove -bv t
 
 
-build: Script
+
 
 
 
