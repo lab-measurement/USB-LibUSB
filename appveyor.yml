@@ -30,7 +30,7 @@ build_script:
   - prove -bv t
 
 
-build: off
+build: Script
 
 
 
