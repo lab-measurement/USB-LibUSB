@@ -13,6 +13,7 @@ jobs:
         with:
           perl-version: ${{matrix.perl}}
       - run: lsb_release -a
+      - run: apt-get install libusb-1.0-0-dev
       - run: perl Makefile.PL
       - run: make
       - run: cpanm Test::Pod
