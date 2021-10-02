@@ -1,3 +1,4 @@
+build: off
 environment:
   matrix:
     - strawberry_version: 5.30.0.1
